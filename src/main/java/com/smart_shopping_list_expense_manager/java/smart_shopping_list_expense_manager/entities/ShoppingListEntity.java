@@ -35,22 +35,36 @@ public class ShoppingListEntity {
     @Column(name = "created_at")
     private Instant createdAt;
 
+    @Column(name = "updated_at")
+    private Instant updatedAt;
+
     @Column(name = "list_type")
     private String listType;
 
-    @OneToMany(mappedBy = "shoppingList", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ManyToOne
+    @JoinColumn(name = "store_id", columnDefinition = "BINARY(16)")
+    private StoreEntity store;
+
+    @OneToMany(mappedBy = "shoppingList", cascade = CascadeType.ALL)
     private List<CollaboratorEntity> collaborators = new ArrayList<>();
 
-    @OneToMany(mappedBy = "shoppingList", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "shoppingList", cascade = CascadeType.ALL)
     private List<ShoppingListItemEntity> items = new ArrayList<>();
 
     @Column(name = "is_active")
-    private boolean isActive;
+    private boolean isActive = true;
 
     @PrePersist
     public void prePersist() {
         if (createdAt == null) {
             createdAt = Instant.now();
+        }
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        if (updatedAt == null) {
+            updatedAt = Instant.now();
         }
     }
 }

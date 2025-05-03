@@ -11,7 +11,10 @@ import static org.hibernate.type.SqlTypes.BINARY;
 
 @Data
 @Entity
-@Table(name = "favorite_stores")
+@Table(
+        name = "favorite_stores",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "store_id"})
+)
 public class FavoriteStoreEntity {
 
     @Id

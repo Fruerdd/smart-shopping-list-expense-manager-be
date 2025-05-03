@@ -2,7 +2,10 @@ package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense
 
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities.ProductEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
 import java.util.UUID;
 
 public interface ProductRepository extends JpaRepository<ProductEntity, UUID> {
+    List<ProductEntity> findByNameContainingIgnoreCase(String name);
 }

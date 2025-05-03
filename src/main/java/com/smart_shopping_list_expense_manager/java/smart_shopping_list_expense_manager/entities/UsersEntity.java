@@ -44,6 +44,9 @@ public class UsersEntity {
     @Column(name = "device_info", length = 255)
     private String deviceInfo;
 
+    @Column(name = "avatar", length = 255)
+    private String avatar;
+
     @Column(name = "created_at")
     private Instant createdAt;
 

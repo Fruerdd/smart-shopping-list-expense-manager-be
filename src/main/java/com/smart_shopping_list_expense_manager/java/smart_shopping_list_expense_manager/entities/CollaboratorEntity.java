@@ -1,5 +1,6 @@
 package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities;
 
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.enums.PermissionEnum;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -11,7 +12,13 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "collaborators")
+@Table(
+        name = "collaborators",
+        uniqueConstraints = @UniqueConstraint(
+                name = "unique_shopping_list_user",
+                columnNames = {"shopping_list_id", "user_id"}
+        )
+)
 public class CollaboratorEntity {
 
     @Id
@@ -28,11 +35,12 @@ public class CollaboratorEntity {
     @JoinColumn(name = "user_id", columnDefinition = "BINARY(16)")
     private UsersEntity user;
 
-    @Column(name = "permission", length = 50)
-    private String permission;
-
     @Column(name = "created_at")
     private Instant createdAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "permission", length = 50, nullable = false)
+    private PermissionEnum permission;
 
     @PrePersist
     public void prePersist() {

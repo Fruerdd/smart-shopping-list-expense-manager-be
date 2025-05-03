@@ -9,4 +9,5 @@ import java.util.UUID;
 @Repository
 public interface StorePriceRepository extends JpaRepository<StorePriceEntity, UUID> {
     List<StorePriceEntity> findByStore_StoreId(UUID storeId);
+    List<StorePriceEntity> findByProduct_ProductId(UUID productId);
 }

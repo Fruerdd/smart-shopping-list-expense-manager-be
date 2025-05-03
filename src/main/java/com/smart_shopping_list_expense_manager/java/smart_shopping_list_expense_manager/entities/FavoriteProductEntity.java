@@ -11,7 +11,10 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "favorite_products")
+@Table(
+        name = "favorite_products",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "product_id"})
+)
 public class FavoriteProductEntity {
 
     @Id

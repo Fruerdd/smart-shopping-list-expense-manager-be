@@ -5,39 +5,33 @@ import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import static org.hibernate.type.SqlTypes.BINARY;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "products")
-public class ProductEntity {
-
+@Table(name = "categories")
+public class CategoryEntity {
     @Id
     @GeneratedValue
     @JdbcTypeCode(BINARY)
-    @Column(name = "product_id", columnDefinition = "BINARY(16)")
-    private UUID productId;
+    @Column(name = "category_id", columnDefinition = "BINARY(16)")
+    private UUID id;
 
-    @Column(name = "name", nullable = false, length = 255)
+    @Column(name = "name", nullable = false, length = 100)
     private String name;
 
-    @ManyToOne
-    @JoinColumn(name = "category_id", columnDefinition = "BINARY(16)")
-    private CategoryEntity category;
-
-    @Column(name = "description")
-    private String description;
+    @Column(name = "icon", length = 255)
+    private String icon;
 
     @Column(name = "created_at")
     private Instant createdAt;
 
-    @Column(name = "is_active")
-    private boolean isActive;
-
-    @Column(name = "image", length = 255)
-    private String image;
+    @OneToMany(mappedBy = "category")
+    private List<ProductEntity> products = new ArrayList<>();
 
     @PrePersist
     public void prePersist() {

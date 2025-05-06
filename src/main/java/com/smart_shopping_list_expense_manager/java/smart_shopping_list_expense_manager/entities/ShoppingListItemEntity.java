@@ -36,7 +36,7 @@ public class ShoppingListItemEntity {
     private String status;
 
     @Column(name = "is_checked")
-    private boolean isChecked;
+    private boolean isChecked = false;
 
     @Column(name = "created_at")
     private Instant createdAt;

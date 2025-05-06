@@ -1,5 +1,6 @@
 package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.admin;
 
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities.CategoryEntity;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -21,7 +22,7 @@ public class AddProductDTO {
     @NotBlank
     private String productName;
 
-    private String category;
+    private CategoryEntity category;
     private String description;
     private boolean isActive = true;
 

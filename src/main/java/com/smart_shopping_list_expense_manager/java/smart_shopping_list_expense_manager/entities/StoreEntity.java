@@ -29,6 +29,9 @@ public class StoreEntity {
     @Column(name = "contact", length = 100)
     private String contact;
 
+    @Column(name = "icon", length = 255)
+    private String icon;
+
     @Column(name = "created_at")
     private Instant createdAt;
 

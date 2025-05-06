@@ -1,26 +1,26 @@
 package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
 import org.hibernate.annotations.JdbcTypeCode;
-import static org.hibernate.type.SqlTypes.BINARY;
+
 import java.time.Instant;
 import java.util.UUID;
 
+import static org.hibernate.type.SqlTypes.BINARY;
+
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(
-        name = "favorite_products",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "product_id"})
+        name = "favorite_stores",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "store_id"})
 )
-public class FavoriteProductEntity {
+public class FavoriteStoreEntity {
 
     @Id
     @GeneratedValue
     @JdbcTypeCode(BINARY)
-    @Column(name = "favorite_product_id", columnDefinition = "BINARY(16)")
+    @Column(name = "favorite_store_id", columnDefinition = "BINARY(16)")
     private UUID id;
 
     @ManyToOne
@@ -28,8 +28,8 @@ public class FavoriteProductEntity {
     private UsersEntity user;
 
     @ManyToOne
-    @JoinColumn(name = "product_id", columnDefinition = "BINARY(16)")
-    private ProductEntity product;
+    @JoinColumn(name = "store_id", columnDefinition = "BINARY(16)")
+    private StoreEntity store;
 
     @Column(name = "created_at")
     private Instant createdAt;

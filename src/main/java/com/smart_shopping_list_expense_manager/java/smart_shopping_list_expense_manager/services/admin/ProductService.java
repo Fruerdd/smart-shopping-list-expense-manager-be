@@ -36,18 +36,34 @@ public class ProductService {
     }
 
     private StorePriceEntity processSingleProduct(AddProductDTO dto) {
-        // 1. Find or load the store
-        StoreEntity store = storeRepository.findById(dto.getStoreId())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid storeId: " + dto.getStoreId()));
+        // 1) Load or create the StorePriceEntity
+        StorePriceEntity storePrice;
+        if (dto.getStorePriceId() != null) {
+            // editing existing
+            storePrice = storePriceRepository.findById(dto.getStorePriceId())
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Invalid storePriceId: " + dto.getStorePriceId()));
+        } else {
+            // creating new
+            storePrice = new StorePriceEntity();
+        }
 
-        // 2. Find existing product if productId provided, else by name, or create new
+        // 2) Find or load the store
+        StoreEntity store = storeRepository.findById(dto.getStoreId())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Invalid storeId: " + dto.getStoreId()));
+        storePrice.setStore(store);
+
+        // 3) Find or create the product
         ProductEntity product;
         if (dto.getProductId() != null) {
             product = productRepository.findById(dto.getProductId())
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid productId: " + dto.getProductId()));
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Invalid productId: " + dto.getProductId()));
+        } else if (storePrice.getProduct() != null) {
+            // reuse existing product on that price record
+            product = storePrice.getProduct();
         } else {
-            // Option A: Check if product with same name already exists (if you want to avoid duplicates):
-            // product = productRepository.findByNameIgnoreCase(dto.getProductName()).orElse(new ProductEntity());
             product = new ProductEntity();
             product.setName(dto.getProductName());
             product.setCategory(dto.getCategory());
@@ -55,14 +71,13 @@ public class ProductService {
             product.setActive(dto.isActive());
             productRepository.save(product);
         }
-
-        // 3. Create the StorePriceEntity linking store + product, plus price/barcode
-        StorePriceEntity storePrice = new StorePriceEntity();
-        storePrice.setStore(store);
         storePrice.setProduct(product);
+
+        // 4) Overwrite all the price fields
         storePrice.setPrice(dto.getPrice());
         storePrice.setBarcode(dto.getBarcode());
 
+        // 5) Persist and return
         return storePriceRepository.save(storePrice);
     }
 }

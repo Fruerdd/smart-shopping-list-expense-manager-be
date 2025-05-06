@@ -10,11 +10,12 @@ import java.util.UUID;
 @Data
 public class AddProductDTO {
 
-    // If a user searches or picks an existing store, we pass the storeId
+    // **NEW**: when editing, we pass the existing store_price_id
+    private UUID storePriceId;
+
     @NotNull
     private UUID storeId;
 
-    // If product exists, we can pass productId, else name/category create new
     private UUID productId;
 
     @NotBlank
@@ -24,10 +25,8 @@ public class AddProductDTO {
     private String description;
     private boolean isActive = true;
 
-    // Price details for this store
     @NotNull
     private BigDecimal price;
 
     private String barcode;
 }
-

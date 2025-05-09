@@ -1,6 +1,5 @@
 package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.admin;
 
-import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities.CategoryEntity;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -10,8 +9,7 @@ import java.util.UUID;
 
 @Data
 public class AddProductDTO {
-
-    // **NEW**: when editing, we pass the existing store_price_id
+    // when editing an existing price record
     private UUID storePriceId;
 
     @NotNull
@@ -22,8 +20,11 @@ public class AddProductDTO {
     @NotBlank
     private String productName;
 
-    private CategoryEntity category;
+    @NotBlank
+    private String category;    // now a simple string
+
     private String description;
+
     private boolean isActive = true;
 
     @NotNull

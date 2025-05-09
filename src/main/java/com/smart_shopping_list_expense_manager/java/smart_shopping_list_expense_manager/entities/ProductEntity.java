@@ -1,14 +1,11 @@
-// ProductEntity.java
 package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
-
 import java.time.Instant;
 import java.util.UUID;
-
 import static org.hibernate.type.SqlTypes.BINARY;
 
 @Data
@@ -24,35 +21,35 @@ public class ProductEntity {
     @Column(name = "product_id", columnDefinition = "BINARY(16)")
     private UUID productId;
 
-    @Column(name = "name", nullable = false, length = 255)
+    @Column(name = "name", nullable = false)
     private String name;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "category_id", columnDefinition = "BINARY(16)")
-    private CategoryEntity category;
 
     @Column(name = "description")
     private String description;
 
+    @Column(name = "image")
+    private String image;
+
+    @Column(name = "is_active")
+    private boolean active;
+
     @Column(name = "created_at")
     private Instant createdAt;
 
-    @Column(name = "is_active")
-    private boolean isActive;
-
-    @Column(name = "image", length = 255)
-    private String image;
-
-    // ← add this:
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "store_id", columnDefinition = "BINARY(16)")
-    @JsonBackReference
+    /** ← NEW: map the StoreEntity so store_id is never null */
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id", nullable = false)
+    @JsonIgnore  // avoid cycles
     private StoreEntity store;
 
+    /** your existing category mapping */
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    @JsonIgnore
+    private CategoryEntity category;
+
     @PrePersist
-    public void prePersist() {
-        if (createdAt == null) {
-            createdAt = Instant.now();
-        }
+    public void onCreate() {
+        if (createdAt == null) createdAt = Instant.now();
     }
 }

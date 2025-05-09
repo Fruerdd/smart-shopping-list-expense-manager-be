@@ -1,7 +1,6 @@
 package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.controllers.admin;
 
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.admin.UserDTO;
-import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities.UsersEntity;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.services.admin.EditUsersService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -12,26 +11,28 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin("http://localhost:4200")
 public class EditUsersController {
-
-    private final EditUsersService editUsersService;
-
-    public EditUsersController(EditUsersService editUsersService) {
-        this.editUsersService = editUsersService;
+    private final EditUsersService svc;
+    public EditUsersController(EditUsersService svc) {
+        this.svc = svc;
     }
 
-    @PostMapping("/bulk")
-    public ResponseEntity<List<UsersEntity>> editMultipleUsers(
-            @RequestBody @Valid List<UserDTO> usersDto,
-            BindingResult bindingResult) {
+    /** GET /api/users → all users */
+    @GetMapping
+    public ResponseEntity<List<UserDTO>> getAll() {
+        return ResponseEntity.ok(svc.getAllUsers());
+    }
 
-        if (bindingResult.hasErrors()) {
-            // Optionally, include error details in the body:
+    /** PUT /api/users/bulk → bulk update */
+    @PutMapping("/bulk")
+    public ResponseEntity<List<UserDTO>> bulkUpdate(
+            @RequestBody @Valid List<UserDTO> usersDto,
+            BindingResult br
+    ) {
+        if (br.hasErrors()) {
             return ResponseEntity.badRequest().build();
         }
-
-        List<UsersEntity> savedUsers = editUsersService.editMultipleUsers(usersDto);
-        return ResponseEntity.ok(savedUsers);
+        return ResponseEntity.ok(svc.editMultipleUsers(usersDto));
     }
 }

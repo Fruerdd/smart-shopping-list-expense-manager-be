@@ -1,7 +1,9 @@
 package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.controllers.admin;
 
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.ProductDTO;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.StoreDTO;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.StorePriceDTO;
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities.ProductEntity;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities.StoreEntity;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities.StorePriceEntity;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.repositories.StoreRepository;
@@ -9,7 +11,9 @@ import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -71,17 +75,33 @@ public class StoreController {
      * → All price‐tagged “products” for that store as StorePriceDTO
      */
     @GetMapping("/{storeId}/products")
-    public ResponseEntity<List<StorePriceDTO>> getProductsForStore(@PathVariable UUID storeId) {
-        List<StorePriceDTO> dtos = storePriceRepository
+    public ResponseEntity<List<Map<String,Object>>> getProductsForStore(@PathVariable UUID storeId) {
+        List<Map<String,Object>> list = storePriceRepository
                 .findByStore_StoreId(storeId)
                 .stream()
-                .map(sp -> new StorePriceDTO(
-                        sp.getStore().getStoreId(),
-                        sp.getStore().getName(),
-                        sp.getPrice()
-                ))
+                .map(sp -> {
+                    Map<String,Object> m = new HashMap<>();
+
+                    // ⚡ include the PK of this price record so edits update instead of insert
+                    m.put("storePriceId", sp.getStorePriceId());
+
+                    // for audit/relational consistency
+                    m.put("storeId",  sp.getStore().getStoreId());
+                    m.put("price",    sp.getPrice());
+                    m.put("barcode",  sp.getBarcode());
+
+                    // flatten your ProductEntity
+                    m.put("productId",   sp.getProduct().getProductId());
+                    m.put("productName", sp.getProduct().getName());
+                    m.put("category",    sp.getProduct().getCategory().getName());
+                    m.put("description", sp.getProduct().getDescription());
+                    m.put("isActive",    sp.getProduct().isActive());
+
+                    return m;
+                })
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(dtos);
+        return ResponseEntity.ok(list);
     }
+
 }

@@ -11,38 +11,68 @@ import java.util.stream.Collectors;
 
 @Service
 public class EditUsersService {
+    private final UsersRepository repo;
 
-    private final UsersRepository userRepository;
-
-    public EditUsersService(UsersRepository userRepository) {
-        this.userRepository = userRepository;
+    public EditUsersService(UsersRepository repo) {
+        this.repo = repo;
     }
 
-    // Converts a single DTO to an Entity.
-    private UsersEntity mapDtoToEntity(UserDTO dto) {
-        UsersEntity entity = new UsersEntity();
-        entity.setName(dto.getName());
-        entity.setEmail(dto.getEmail());
-        entity.setPassword(dto.getPassword());
-        entity.setPhoneNumber(dto.getPhoneNumber());
-        entity.setReferralCode(dto.getReferralCode());
-        entity.setPromoCode(dto.getPromoCode());
-        entity.setBonusPoints(dto.getBonusPoints());
-        entity.setDeviceInfo(dto.getDeviceInfo());
-        entity.setLocation(dto.getLocation());
-        entity.setUserType(dto.getUserType());
-        entity.setIsActive(dto.getIsActive());
-        entity.setReviewScore(dto.getReviewScore());
-        entity.setReviewContext(dto.getReviewContext());
-        return entity;
+    /** Map DB entity → DTO */
+    private UserDTO toDto(UsersEntity e) {
+        UserDTO dto = new UserDTO();
+        dto.setId(e.getUserId());
+        dto.setName(e.getName());
+        dto.setEmail(e.getEmail());
+        dto.setPhoneNumber(e.getPhoneNumber());
+        dto.setReferralCode(e.getReferralCode());
+        dto.setPromoCode(e.getPromoCode());
+        dto.setBonusPoints(e.getBonusPoints());
+        dto.setDeviceInfo(e.getDeviceInfo());
+        dto.setLocation(e.getLocation());
+        dto.setUserType(e.getUserType());           // <-- role
+        dto.setIsActive(e.getIsActive());
+        dto.setReviewScore(e.getReviewScore());
+        dto.setReviewContext(e.getReviewContext());
+        return dto;
     }
 
-    // Business logic for bulk editing or adding users.
-    @Transactional
-    public List<UsersEntity> editMultipleUsers(List<UserDTO> usersDto) {
-        List<UsersEntity> entities = usersDto.stream()
-                .map(this::mapDtoToEntity)
+    /** Map DTO → Entity (for both add & update) */
+    private UsersEntity toEntity(UserDTO dto) {
+        UsersEntity e = dto.getId() != null
+                ? repo.findById(dto.getId()).orElse(new UsersEntity())
+                : new UsersEntity();
+        e.setName(dto.getName());
+        e.setEmail(dto.getEmail());
+        e.setPassword(dto.getPassword());
+        e.setPhoneNumber(dto.getPhoneNumber());
+        e.setReferralCode(dto.getReferralCode());
+        e.setPromoCode(dto.getPromoCode());
+        e.setBonusPoints(dto.getBonusPoints());
+        e.setDeviceInfo(dto.getDeviceInfo());
+        e.setLocation(dto.getLocation());
+        e.setUserType(dto.getUserType());            // <-- role
+        e.setIsActive(dto.getIsActive());
+        e.setReviewScore(dto.getReviewScore());
+        e.setReviewContext(dto.getReviewContext());
+        return e;
+    }
+
+    /** Retrieve everyone */
+    public List<UserDTO> getAllUsers() {
+        return repo.findAll().stream()
+                .map(this::toDto)
                 .collect(Collectors.toList());
-        return userRepository.saveAll(entities);
+    }
+
+    /** Save all incoming, return DTOs */
+    @Transactional
+    public List<UserDTO> editMultipleUsers(List<UserDTO> dtos) {
+        List<UsersEntity> saved = dtos.stream()
+                .map(this::toEntity)
+                .collect(Collectors.toList());
+        saved = repo.saveAll(saved);
+        return saved.stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
     }
 }

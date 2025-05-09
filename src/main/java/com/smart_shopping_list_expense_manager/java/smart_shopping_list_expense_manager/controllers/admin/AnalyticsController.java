@@ -3,6 +3,7 @@ package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense
 
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.admin.DailySearchDTO;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.admin.MonthlyProductAddDTO;
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.admin.TopProductDTO;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.services.admin.AnalyticsService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,5 +35,10 @@ public class AnalyticsController {
     @GetMapping("/weekly-searches")
     public ResponseEntity<List<DailySearchDTO>> weeklySearches() {
         return ResponseEntity.ok(svc.getWeeklySearches());
+    }
+
+    @GetMapping("/top")
+    public ResponseEntity<List<TopProductDTO>> topProducts() {
+        return ResponseEntity.ok(svc.getTopProducts());
     }
 }

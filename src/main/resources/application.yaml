@@ -16,3 +16,7 @@ spring:
       hibernate:
         format_sql: true
     database-platform: org.hibernate.dialect.MySQL8Dialect
+
+  jwt:
+    secret: Fz9qW!@2rA8sXbV&cM3k#LzTnY6uQeDpG4hJiMkVoR1xZnCb
+    expiration: 36000000 # 10 sati traje

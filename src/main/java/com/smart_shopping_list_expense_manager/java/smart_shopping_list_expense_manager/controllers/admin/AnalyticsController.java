@@ -41,4 +41,6 @@ public class AnalyticsController {
     public ResponseEntity<List<TopProductDTO>> topProducts() {
         return ResponseEntity.ok(svc.getTopProducts());
     }
+
+
 }

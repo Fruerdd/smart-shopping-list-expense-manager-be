@@ -44,4 +44,8 @@ public class StorePriceEntity {
             createdAt = Instant.now();
         }
     }
+
+    public Object getStorePriceId() {
+        return id;
+    }
 }

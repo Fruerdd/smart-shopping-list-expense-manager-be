@@ -1,11 +1,15 @@
+
 package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
-import static org.hibernate.type.SqlTypes.BINARY;
+
 import java.time.Instant;
-import java.util.UUID;
+import java.util.*;
+
+import static org.hibernate.type.SqlTypes.BINARY;
 
 @Data
 @NoArgsConstructor
@@ -34,6 +38,14 @@ public class StoreEntity {
 
     @Column(name = "created_at")
     private Instant createdAt;
+
+    // ← add this:
+    @OneToMany(mappedBy = "store",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<ProductEntity> products = new ArrayList<>();
 
     @PrePersist
     public void prePersist() {

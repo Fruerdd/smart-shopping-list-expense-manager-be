@@ -8,8 +8,6 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(name = "friends")
 public class FriendsEntity {

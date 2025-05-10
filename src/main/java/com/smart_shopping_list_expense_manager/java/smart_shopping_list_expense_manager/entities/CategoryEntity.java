@@ -1,13 +1,16 @@
 package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
-import static org.hibernate.type.SqlTypes.BINARY;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import static org.hibernate.type.SqlTypes.BINARY;
 
 @Data
 @NoArgsConstructor
@@ -30,7 +33,11 @@ public class CategoryEntity {
     @Column(name = "created_at")
     private Instant createdAt;
 
-    @OneToMany(mappedBy = "category")
+    /**
+     * Prevent Jackson from serializing this list (avoids recursion):
+     */
+    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<ProductEntity> products = new ArrayList<>();
 
     @PrePersist

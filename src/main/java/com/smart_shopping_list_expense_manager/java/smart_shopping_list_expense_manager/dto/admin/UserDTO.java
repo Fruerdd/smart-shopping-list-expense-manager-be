@@ -1,43 +1,45 @@
+// src/main/java/com/smart_shopping_list_expense_manager/.../dto/admin/UserDTO.java
 package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.admin;
 
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.UUID;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class UserDTO {
+    private UUID    id;
 
-    @NotBlank(message = "Name is required")
-    @Size(max = 100, message = "Name is too long")
-    private String name;
+    @NotBlank
+    private String  name;
 
-    @NotBlank(message = "Email is required")
-    @Email(message = "Provide a valid email")
-    @Size(max = 100)
-    private String email;
+    @NotBlank
+    @Email
+    private String  email;
 
-    private String password;
-    private String phoneNumber;
-    private String referralCode;
-    private String promoCode;
+    private String  password;
+    private String  phoneNumber;
+    private String  referralCode;
+    private String  promoCode;
 
-    @Min(value = 0, message = "Bonus points must be non-negative")
+    @NotNull
     private Integer bonusPoints;
 
-    private String deviceInfo;
-    private String location;
-    private String userType;
+    private String  deviceInfo;
+    private String  location;
 
-    @NotNull(message = "Active flag must be provided")
+    @NotBlank
+    private String  userType;    // "user" or "admin"
+
+    @NotNull
     private Boolean isActive;
 
-    private Double reviewScore;
-    private String reviewContext;
-
-
+    private Double  reviewScore;
+    private String  reviewContext;
 }

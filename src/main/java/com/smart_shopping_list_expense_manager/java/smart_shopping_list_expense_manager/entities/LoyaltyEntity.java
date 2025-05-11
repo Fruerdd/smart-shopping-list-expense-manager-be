@@ -23,9 +23,9 @@ public class LoyaltyEntity {
     @Column(name = "id", columnDefinition = "BINARY(16)")
     private UUID id;
 
-    @JdbcTypeCode(BINARY)
-    @Column(name = "user_id", nullable = false, columnDefinition = "BINARY(16)", unique = true)
-    private UUID userId;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id")
+    private UsersEntity user;
 
     @Column(name = "points", nullable = false)
     private Integer points;

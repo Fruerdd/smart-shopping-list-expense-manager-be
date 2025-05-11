@@ -3,8 +3,10 @@ package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.ReferralDTO;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.ReferralResponse;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities.ReferralEntity;
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities.UsersEntity;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.enums.ReferralStatusEnum;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.repositories.ReferralRepository;
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.repositories.UsersRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -13,16 +15,26 @@ import java.util.UUID;
 public class ReferralService {
 
     private final ReferralRepository referralRepository;
+    private final UsersRepository usersRepository;
 
-    public ReferralService(ReferralRepository referralRepository) {
+    public ReferralService(ReferralRepository referralRepository, UsersRepository usersRepository) {
         this.referralRepository = referralRepository;
+        this.usersRepository = usersRepository;
     }
+
 
     public ReferralResponse createReferral(ReferralDTO dto) {
         ReferralEntity referral = new ReferralEntity();
 
-        referral.setReferrerId(dto.getReferrerId());
-        referral.setReferredUserId(dto.getReferredUserId());
+        UsersEntity referrer = usersRepository.findById(dto.getReferrerId())
+                .orElseThrow(() -> new RuntimeException("Referrer not found"));
+
+        UsersEntity referred = usersRepository.findById(dto.getReferredUserId())
+                .orElseThrow(() -> new RuntimeException("Referred user not found"));
+
+        referral.setReferrer(referrer);
+        referral.setReferredUser(referred);
+
 
         // inicijalno postavljamo statu i nagradu ako vec nisu
         referral.setStatus(dto.getStatus() != null ? dto.getStatus() : ReferralStatusEnum.PENDING);

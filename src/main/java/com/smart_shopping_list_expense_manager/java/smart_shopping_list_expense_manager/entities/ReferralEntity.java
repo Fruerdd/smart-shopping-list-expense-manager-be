@@ -24,13 +24,13 @@ public class ReferralEntity {
     @Column(name = "id", columnDefinition = "BINARY(16)")
     private UUID id;
 
-    @JdbcTypeCode(BINARY)
-    @Column(name = "referrer_id", nullable = false, columnDefinition = "BINARY(16)")
-    private UUID referrerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "referrer_id", referencedColumnName = "user_id")
+    private UsersEntity referrer;
 
-    @JdbcTypeCode(BINARY)
-    @Column(name = "referred_user_id", nullable = false, columnDefinition = "BINARY(16)")
-    private UUID referredUserId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "referred_user_id", referencedColumnName = "user_id")
+    private UsersEntity referredUser;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)

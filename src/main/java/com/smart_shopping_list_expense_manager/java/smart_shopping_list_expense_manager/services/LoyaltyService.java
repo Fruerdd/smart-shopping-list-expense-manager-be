@@ -2,8 +2,10 @@ package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense
 
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.LoyaltyDTO;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities.LoyaltyEntity;
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities.UsersEntity;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.enums.LoyaltyTierEnum;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.repositories.LoyaltyRepository;
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.repositories.UsersRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -13,13 +15,18 @@ import java.util.UUID;
 public class LoyaltyService {
 
     private final LoyaltyRepository loyaltyRepository;
+    private final UsersRepository usersRepository;
 
-    public LoyaltyService(LoyaltyRepository loyaltyRepository) {
+    public LoyaltyService(LoyaltyRepository loyaltyRepository, UsersRepository usersRepository) {
         this.loyaltyRepository = loyaltyRepository;
+        this.usersRepository = usersRepository;
     }
 
     public LoyaltyDTO getLoyaltyStatus(UUID userId) {
-        Optional<LoyaltyEntity> loyaltyOpt = loyaltyRepository.findByUserId(userId);
+        UsersEntity user = usersRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Optional<LoyaltyEntity> loyaltyOpt = loyaltyRepository.findByUser(user);
 
         LoyaltyDTO dto = new LoyaltyDTO();
         dto.setUserId(userId);

@@ -1,11 +1,16 @@
 package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities;
 
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.enums.LoyaltyTierEnum;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
-import static org.hibernate.type.SqlTypes.BINARY;
+
 import java.time.Instant;
 import java.util.UUID;
+
+import static org.hibernate.type.SqlTypes.BINARY;
 
 @Data
 @NoArgsConstructor
@@ -40,6 +45,10 @@ public class UsersEntity {
 
     @Column(name = "bonus_points")
     private Integer bonusPoints;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "loyalty_tier")
+    private LoyaltyTierEnum loyaltyTier;
 
     @Column(name = "device_info", length = 255)
     private String deviceInfo;

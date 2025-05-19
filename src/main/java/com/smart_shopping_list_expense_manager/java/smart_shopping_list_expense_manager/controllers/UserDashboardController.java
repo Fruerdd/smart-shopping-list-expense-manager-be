@@ -14,11 +14,9 @@ import java.util.UUID;
 @CrossOrigin(origins = "http://localhost:4200")
 public class UserDashboardController {
     private final UserDashboardService userService;
-    private final UserDashboardService userDashboardService;
 
-    public UserDashboardController(UserDashboardService userService, UserDashboardService userDashboardService) {
+    public UserDashboardController(UserDashboardService userService) {
         this.userService = userService;
-        this.userDashboardService = userDashboardService;
     }
 
     @GetMapping("/{id}")
@@ -124,7 +122,7 @@ public class UserDashboardController {
 
     @GetMapping("/loyalty/{userId}")
     public ResponseEntity<LoyaltyTierEnum> getLoyaltyTier(@PathVariable UUID userId) {
-        LoyaltyTierEnum tier = userDashboardService.getUserLoyaltyTier(userId);
+        LoyaltyTierEnum tier = userService.getUserLoyaltyTier(userId);
         return ResponseEntity.ok(tier);
     }
 }

@@ -46,7 +46,7 @@ public class ReferralService {
     }
 
     public ReferralResponse completeReferral(UUID referredUserId) {
-        ReferralEntity referral = referralRepository.findByReferredUserId(referredUserId)
+        ReferralEntity referral = referralRepository.findByReferredUserUserId(referredUserId)
                 .orElseThrow(() -> new RuntimeException("Referral not found"));
 
         referral.setStatus(ReferralStatusEnum.PURCHASED);

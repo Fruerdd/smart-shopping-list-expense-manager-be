@@ -1,32 +1,30 @@
+// NotificationsEntity.java
 package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import static org.hibernate.type.SqlTypes.BINARY;
+import org.hibernate.annotations.GenericGenerator;
+
 import java.time.Instant;
 import java.util.UUID;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(name = "notifications")
 public class NotificationsEntity {
 
     @Id
-    @GeneratedValue
-    @JdbcTypeCode(BINARY)
-    @Column(name = "notification_id", columnDefinition = "BINARY(16)", nullable = false, updatable = false)
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "notification_id", columnDefinition = "uuid", updatable = false, nullable = false)
     private UUID id;
 
-
-    @ManyToOne
-    @JoinColumn(name = "destination_user_id", columnDefinition = "BINARY(16)", nullable = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "destination_user_id", columnDefinition = "uuid", nullable = false)
     private UsersEntity destination;
 
-    @ManyToOne
-    @JoinColumn(name = "source_user_id", columnDefinition = "BINARY(16)", nullable = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "source_user_id", columnDefinition = "uuid", nullable = false)
     private UsersEntity source;
 
     @Column(name = "title", length = 255)
@@ -41,13 +39,11 @@ public class NotificationsEntity {
     @Column(name = "is_read", nullable = false)
     private Boolean isRead = false;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
     @PrePersist
     public void prePersist() {
-        if (createdAt == null) {
-            createdAt = Instant.now();
-        }
+        if (createdAt == null) createdAt = Instant.now();
     }
 }

@@ -7,5 +7,5 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ReferralRepository extends JpaRepository<ReferralEntity, UUID> {
-    Optional<ReferralEntity> findByReferredUserId(UUID referredUserId);
+    Optional<ReferralEntity> findByReferredUserUserId(UUID userId);
 }

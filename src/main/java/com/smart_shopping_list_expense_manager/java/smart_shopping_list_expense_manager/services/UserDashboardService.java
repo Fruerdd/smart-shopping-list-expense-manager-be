@@ -55,7 +55,6 @@ public class UserDashboardService {
         userDTO.setEmail(user.getEmail());
         userDTO.setName(user.getName());
         userDTO.setBonus_points(user.getBonusPoints());
-        userDTO.setLoyaltyTier(user.getLoyaltyTier());
         userDTO.setShoppingLists(shoppingListService.getShoppingListsByUserId(id));
         return userDTO;
     }

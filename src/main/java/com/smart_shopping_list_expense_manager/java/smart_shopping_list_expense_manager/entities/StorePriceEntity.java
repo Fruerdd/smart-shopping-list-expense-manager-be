@@ -2,8 +2,8 @@ package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import static org.hibernate.type.SqlTypes.BINARY;
+import org.hibernate.annotations.GenericGenerator;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
@@ -15,18 +15,19 @@ import java.util.UUID;
 @Table(name = "store_prices")
 public class StorePriceEntity {
 
+    // 1) Rename the field to match the getter you’re calling:
     @Id
-    @GeneratedValue
-    @JdbcTypeCode(BINARY)
-    @Column(name = "store_price_id", columnDefinition = "BINARY(16)")
-    private UUID id;
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "store_price_id", columnDefinition = "uuid", updatable = false, nullable = false)
+    private UUID storePriceId;
 
-    @ManyToOne
-    @JoinColumn(name = "store_id", columnDefinition = "BINARY(16)")
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id", columnDefinition = "uuid", nullable = false)
     private StoreEntity store;
 
-    @ManyToOne
-    @JoinColumn(name = "product_id", columnDefinition = "BINARY(16)")
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", columnDefinition = "uuid", nullable = false)
     private ProductEntity product;
 
     @Column(name = "price", precision = 38, scale = 2)
@@ -35,7 +36,7 @@ public class StorePriceEntity {
     @Column(name = "barcode", length = 255)
     private String barcode;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
     @PrePersist
@@ -43,9 +44,5 @@ public class StorePriceEntity {
         if (createdAt == null) {
             createdAt = Instant.now();
         }
-    }
-
-    public Object getStorePriceId() {
-        return id;
     }
 }

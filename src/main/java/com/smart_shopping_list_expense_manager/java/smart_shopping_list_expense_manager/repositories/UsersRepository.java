@@ -28,4 +28,7 @@ public interface UsersRepository extends JpaRepository<UsersEntity, UUID> {
     /** Count users still active as of the given instant */
     @Query("SELECT COUNT(u) FROM UsersEntity u WHERE u.createdAt < :asOf AND u.isActive = true")
     long countActiveUsersAt(@Param("asOf") Instant asOf);
+
+
+    boolean existsByEmail(String email);
 }

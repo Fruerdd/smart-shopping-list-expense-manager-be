@@ -1,10 +1,11 @@
+// CollaboratorEntity.java
 package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities;
 
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.enums.PermissionEnum;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import static org.hibernate.type.SqlTypes.BINARY;
+import org.hibernate.annotations.GenericGenerator;
+
 import java.time.Instant;
 import java.util.UUID;
 
@@ -22,20 +23,20 @@ import java.util.UUID;
 public class CollaboratorEntity {
 
     @Id
-    @GeneratedValue
-    @JdbcTypeCode(BINARY)
-    @Column(name = "collab_id", columnDefinition = "BINARY(16)")
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "collab_id", columnDefinition = "uuid", updatable = false, nullable = false)
     private UUID id;
 
-    @ManyToOne
-    @JoinColumn(name = "shopping_list_id", columnDefinition = "BINARY(16)")
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "shopping_list_id", columnDefinition = "uuid", nullable = false)
     private ShoppingListEntity shoppingList;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", columnDefinition = "BINARY(16)")
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", columnDefinition = "uuid", nullable = false)
     private UsersEntity user;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
     @Enumerated(EnumType.STRING)
@@ -44,8 +45,6 @@ public class CollaboratorEntity {
 
     @PrePersist
     public void prePersist() {
-        if (createdAt == null) {
-            createdAt = Instant.now();
-        }
+        if (createdAt == null) createdAt = Instant.now();
     }
 }

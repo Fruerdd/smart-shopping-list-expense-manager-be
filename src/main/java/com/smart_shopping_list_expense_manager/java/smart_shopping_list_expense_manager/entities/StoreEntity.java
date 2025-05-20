@@ -1,15 +1,13 @@
-
+// StoreEntity.java
 package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.GenericGenerator;
 
 import java.time.Instant;
 import java.util.*;
-
-import static org.hibernate.type.SqlTypes.BINARY;
 
 @Data
 @NoArgsConstructor
@@ -19,9 +17,9 @@ import static org.hibernate.type.SqlTypes.BINARY;
 public class StoreEntity {
 
     @Id
-    @GeneratedValue
-    @JdbcTypeCode(BINARY)
-    @Column(name = "store_id", columnDefinition = "BINARY(16)")
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "store_id", columnDefinition = "uuid", updatable = false, nullable = false)
     private UUID storeId;
 
     @Column(name = "name", nullable = false, length = 255)
@@ -36,21 +34,15 @@ public class StoreEntity {
     @Column(name = "icon", length = 255)
     private String icon;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    // ← add this:
-    @OneToMany(mappedBy = "store",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<ProductEntity> products = new ArrayList<>();
 
     @PrePersist
     public void prePersist() {
-        if (createdAt == null) {
-            createdAt = Instant.now();
-        }
+        if (createdAt == null) createdAt = Instant.now();
     }
 }

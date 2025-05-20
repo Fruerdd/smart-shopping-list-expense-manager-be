@@ -1,6 +1,7 @@
 package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.controllers;
 
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.*;
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.enums.LoyaltyTierEnum;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.services.UserDashboardService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -117,5 +118,11 @@ public class UserDashboardController {
     public ResponseEntity<Void> removeCollaborator(@PathVariable UUID id, @PathVariable UUID listId, @PathVariable UUID collaboratorId) {
         userService.removeCollaborator(id, listId, collaboratorId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/loyalty/{userId}")
+    public ResponseEntity<LoyaltyTierEnum> getLoyaltyTier(@PathVariable UUID userId) {
+        LoyaltyTierEnum tier = userService.getUserLoyaltyTier(userId);
+        return ResponseEntity.ok(tier);
     }
 }

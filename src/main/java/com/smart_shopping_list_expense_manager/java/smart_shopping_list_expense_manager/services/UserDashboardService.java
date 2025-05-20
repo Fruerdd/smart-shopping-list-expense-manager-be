@@ -2,6 +2,7 @@ package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense
 
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.*;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities.*;
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.enums.LoyaltyTierEnum;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.enums.PermissionEnum;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.exceptions.ResourceNotFoundException;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.repositories.*;
@@ -53,6 +54,8 @@ public class UserDashboardService {
         userDTO.setId(user.getUserId());
         userDTO.setEmail(user.getEmail());
         userDTO.setName(user.getName());
+        userDTO.setBonus_points(user.getBonusPoints());
+        userDTO.setLoyaltyTier(user.getLoyaltyTier());
         userDTO.setShoppingLists(shoppingListService.getShoppingListsByUserId(id));
         return userDTO;
     }
@@ -316,6 +319,20 @@ public class UserDashboardService {
     private boolean hasEditPermission(UUID userId, UUID listId) {
         return collaboratorRepository.findByShoppingList_IdAndUser_UserId(listId, userId)
                 .stream().anyMatch(c -> c.getPermission() == PermissionEnum.EDIT);
+    }
+
+    public LoyaltyTierEnum getUserLoyaltyTier(UUID userId) {
+        UsersEntity user = usersRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        int points = Optional.ofNullable(user.getBonusPoints()).orElse(0);
+        return calculateTier(points);
+    }
+
+    private LoyaltyTierEnum calculateTier(int points) {
+        if (points >= 500) return LoyaltyTierEnum.GOLD;
+        if (points >= 100) return LoyaltyTierEnum.SILVER;
+        return LoyaltyTierEnum.BRONZE;
     }
 
     private ShoppingListDTO convertToShoppingListDTO(ShoppingListEntity shoppingList) {

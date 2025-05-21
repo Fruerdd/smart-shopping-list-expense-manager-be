@@ -7,8 +7,12 @@ import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities.UsersEntity;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.repositories.UsersRepository;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.services.AuthService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
@@ -26,14 +30,12 @@ public class AuthController {
         this.usersRepository = usersRepository;
     }
 
-    // REGISTRACIJA
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterDTO registerDto) {
         String result = authService.register(registerDto);
         return ResponseEntity.ok(result);
     }
 
-    // LOGIN
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody AuthDTO authDto) {
         AuthResponse response = authService.login(authDto);
@@ -41,17 +43,77 @@ public class AuthController {
     }
 
     @GetMapping("/profile/{id}")
-    public ResponseEntity<UserDTO> getUserProfile(@PathVariable UUID id) {
-        UsersEntity user = usersRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public ResponseEntity<UserDTO> getUserProfile(@PathVariable String id) {
+        UUID uuid;
+        try {
+            uuid = UUID.fromString(id);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid UUID format");
+        }
+
+        UsersEntity user = usersRepository.findById(uuid)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
         UserDTO dto = new UserDTO();
         dto.setId(user.getUserId());
         dto.setEmail(user.getEmail());
         dto.setName(user.getName());
-        dto.setShoppingLists(List.of()); // prazno jer za sad preskacemo listu
+        dto.setShoppingLists(List.of());
 
         return ResponseEntity.ok(dto);
     }
 
+    @GetMapping("/profile/me")
+    public ResponseEntity<UserDTO> getCurrentUserProfile() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUserEmail = authentication.getName();
+
+        UsersEntity user = usersRepository.findByEmail(currentUserEmail)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Current user not found"));
+
+        UserDTO dto = new UserDTO();
+        dto.setId(user.getUserId());
+        dto.setEmail(user.getEmail());
+        dto.setName(user.getName());
+        dto.setShoppingLists(List.of());
+
+        return ResponseEntity.ok(dto);
+    }
+
+    @PutMapping("/profile/{id}")
+    public ResponseEntity<UserDTO> updateUserProfile(@PathVariable String id, @RequestBody UserDTO userDTO) {
+        UUID uuid;
+        try {
+            uuid = UUID.fromString(id);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid UUID format");
+        }
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUserEmail = authentication.getName();
+
+        UsersEntity user = usersRepository.findById(uuid)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!user.getEmail().equals(currentUserEmail) && !isAdmin) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You don't have permission to update this profile");
+        }
+
+        if (userDTO.getName() != null) {
+            user.setName(userDTO.getName());
+        }
+
+        UsersEntity updatedUser = usersRepository.save(user);
+
+        UserDTO responseDTO = new UserDTO();
+        responseDTO.setId(updatedUser.getUserId());
+        responseDTO.setEmail(updatedUser.getEmail());
+        responseDTO.setName(updatedUser.getName());
+        responseDTO.setShoppingLists(List.of());
+
+        return ResponseEntity.ok(responseDTO);
+    }
 }

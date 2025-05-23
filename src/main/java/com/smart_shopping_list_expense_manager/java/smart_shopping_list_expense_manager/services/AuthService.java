@@ -39,6 +39,7 @@ public class AuthService {
         user.setEmail(dto.getEmail());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setIsActive(true);
+        user.setUserType("USER");
 
         usersRepository.save(user);
         return "User registered successfully";

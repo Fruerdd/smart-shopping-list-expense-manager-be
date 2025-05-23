@@ -154,19 +154,19 @@ public class ShoppingListService {
         return convertToDTO(saved);
     }
 
-    public ShoppingListItemDTO updateShoppingListItem(UUID shoppingListId, UUID itemId, ShoppingListItemDTO itemDTO) {
-        ShoppingListEntity shoppingList = shoppingListRepository.findById(shoppingListId)
-                .orElseThrow(() -> new ResourceNotFoundException("Shopping list not found with id: " + shoppingListId));
-        ShoppingListItemEntity item = shoppingList.getItems().stream()
-                .filter(i -> i.getId().equals(itemId))
-                .findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException("Item not found with id: " + itemId));
-        item.setQuantity(itemDTO.getQuantity() != null ? BigDecimal.valueOf(itemDTO.getQuantity()) : item.getQuantity());
-        item.setChecked(itemDTO.isChecked());
-        item.setStatus(itemDTO.getStatus());
-        shoppingListRepository.save(shoppingList);
-        return convertToItemDTO(item, shoppingList.getStore().getName());
-    }
+//    public ShoppingListItemDTO updateShoppingListItem(UUID shoppingListId, UUID itemId, ShoppingListItemDTO itemDTO) {
+//        ShoppingListEntity shoppingList = shoppingListRepository.findById(shoppingListId)
+//                .orElseThrow(() -> new ResourceNotFoundException("Shopping list not found with id: " + shoppingListId));
+//        ShoppingListItemEntity item = shoppingList.getItems().stream()
+//                .filter(i -> i.getId().equals(itemId))
+//                .findFirst()
+//                .orElseThrow(() -> new ResourceNotFoundException("Item not found with id: " + itemId));
+//        item.setQuantity(itemDTO.getQuantity() != null ? BigDecimal.valueOf(itemDTO.getQuantity()) : item.getQuantity());
+//        item.setChecked(itemDTO.isChecked());
+//        item.setStatus(itemDTO.getStatus());
+//        shoppingListRepository.save(shoppingList);
+//        return convertToItemDTO(item, shoppingList.getStore().getName());
+//    }
 
     public void softDeleteShoppingList(UUID id) {
         ShoppingListEntity shoppingList = shoppingListRepository.findById(id)
@@ -294,7 +294,7 @@ public class ShoppingListService {
         itemDTO.setImage(item.getProduct().getImage());
         itemDTO.setCategoryId(item.getProduct().getCategory() != null ? item.getProduct().getCategory().getId() : null);
         itemDTO.setQuantity(item.getQuantity() != null ? item.getQuantity().doubleValue() : null);
-        itemDTO.setChecked(item.isChecked());
+        itemDTO.setIsChecked(item.isChecked());
         itemDTO.setStatus(item.getStatus());
         itemDTO.setStoreName(storeName);
         List<StorePriceEntity> prices = storePriceRepository.findByProduct_ProductId(item.getProduct().getProductId());
@@ -322,7 +322,7 @@ public class ShoppingListService {
         dto.setImage(product.getImage());
         dto.setCategoryId(product.getCategory() != null ? product.getCategory().getId() : null);
         dto.setQuantity(null);
-        dto.setChecked(false);
+        dto.setIsChecked(false);
         dto.setStatus(null);
         return dto;
     }

@@ -13,6 +13,8 @@ public class UserDTO {
     private UUID id;
     private String email;
     private String name;
+    private String phone;
+    private String address;
     private LoyaltyTierEnum loyaltyTier;
     private Integer bonus_points;
     private List<ShoppingListDTO> shoppingLists;

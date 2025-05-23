@@ -11,6 +11,6 @@ import java.util.UUID;
 
 @Repository
 public interface FavoriteProductRepository extends JpaRepository<FavoriteProductEntity, UUID> {
-    @Query("SELECT fp FROM FavoriteProductEntity fp WHERE fp.user.userId = :userId AND fp.product.productId = :productId")
+    @Query("SELECT fp FROM FavoriteProductEntity fp WHERE fp.user.userId = :userId AND fp.id = :productId")
     Optional<FavoriteProductEntity> findByUserIdAndProductId(@Param("userId") UUID userId, @Param("productId") UUID productId);
 }

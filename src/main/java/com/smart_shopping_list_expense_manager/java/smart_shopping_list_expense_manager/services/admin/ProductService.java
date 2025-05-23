@@ -70,7 +70,7 @@ public class ProductService {
         product.setActive(dto.isActive());
 
         CategoryEntity category = categoryRepository
-                .findByName(dto.getCategory())
+                .findFirstByNameIgnoreCase(dto.getCategory())
                 .orElseGet(() -> {
                     CategoryEntity c = new CategoryEntity();
                     c.setName(dto.getCategory());

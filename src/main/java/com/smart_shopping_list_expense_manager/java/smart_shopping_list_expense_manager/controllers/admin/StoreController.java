@@ -2,13 +2,17 @@ package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense
 
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.admin.StoreCreateUpdateDTO;  // ← import your DTO
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.StoreDTO;
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.admin.StoreProductDTO;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities.StoreEntity;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.repositories.StoreRepository;
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.repositories.StorePriceRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/stores")
@@ -16,9 +20,28 @@ import java.util.UUID;
 public class StoreController {
 
     private final StoreRepository storeRepository;
+    private final StorePriceRepository storePriceRepository;
+    public StoreController(
+            StoreRepository storeRepository,
+            StorePriceRepository storePriceRepository
+    ) {
+        this.storeRepository      = storeRepository;
+        this.storePriceRepository = storePriceRepository;
+    }
 
-    public StoreController(StoreRepository storeRepository) {
-        this.storeRepository = storeRepository;
+    @GetMapping
+    public ResponseEntity<List<StoreDTO>> getAllStores() {
+        List<StoreDTO> dtos = storeRepository.findAll()
+                .stream()
+                .map(store -> {
+                    StoreDTO dto = new StoreDTO();
+                    dto.setId(store.getStoreId());
+                    dto.setName(store.getName());
+                    dto.setIcon(store.getIcon());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 
     @PostMapping
@@ -61,5 +84,40 @@ public class StoreController {
                     return ResponseEntity.ok(dto);
                 })
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/{storeId}")
+    public ResponseEntity<StoreDTO> getStoreById(@PathVariable UUID storeId) {
+        return storeRepository.findById(storeId)
+                .map(store -> {
+                    StoreDTO dto = new StoreDTO();
+                    dto.setId(store.getStoreId());
+                    dto.setName(store.getName());
+                    dto.setIcon(store.getIcon());
+                    return ResponseEntity.ok(dto);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/{storeId}/products")
+    public ResponseEntity<List<StoreProductDTO>> getProductsForStore(
+            @PathVariable UUID storeId
+    ) {
+        List<StoreProductDTO> dtos = storePriceRepository
+                .findByStore_StoreId(storeId)
+                .stream()
+                .map(sp -> new StoreProductDTO(
+                        sp.getStorePriceId().toString(),
+                        sp.getStore().getStoreId().toString(),
+                        sp.getProduct().getProductId().toString(),
+                        sp.getProduct().getName(),
+                        sp.getProduct().getCategory().getName(),
+                        sp.getProduct().getDescription(),
+                        sp.getProduct().isActive(),
+                        sp.getPrice().doubleValue(),
+                        sp.getBarcode()
+                ))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 }

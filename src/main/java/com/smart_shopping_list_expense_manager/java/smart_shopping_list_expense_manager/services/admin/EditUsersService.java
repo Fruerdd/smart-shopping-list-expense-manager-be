@@ -17,7 +17,6 @@ public class EditUsersService {
         this.repo = repo;
     }
 
-    /** Map DB entity → DTO */
     private UserDTO toDto(UsersEntity e) {
         UserDTO dto = new UserDTO();
         dto.setId(e.getUserId());
@@ -35,8 +34,6 @@ public class EditUsersService {
         dto.setReviewContext(e.getReviewContext());
         return dto;
     }
-
-    /** Map DTO → Entity (for both add & update) */
     private UsersEntity toEntity(UserDTO dto) {
         UsersEntity e = dto.getId() != null
                 ? repo.findById(dto.getId()).orElse(new UsersEntity())
@@ -57,14 +54,12 @@ public class EditUsersService {
         return e;
     }
 
-    /** Retrieve everyone */
     public List<UserDTO> getAllUsers() {
         return repo.findAll().stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
 
-    /** Save all incoming, return DTOs */
     @Transactional
     public List<UserDTO> editMultipleUsers(List<UserDTO> dtos) {
         List<UsersEntity> saved = dtos.stream()

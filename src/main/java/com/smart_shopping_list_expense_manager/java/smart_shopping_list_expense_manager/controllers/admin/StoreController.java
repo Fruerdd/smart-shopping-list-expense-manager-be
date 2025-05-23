@@ -1,21 +1,14 @@
 package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.controllers.admin;
 
-import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.ProductDTO;
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.admin.StoreCreateUpdateDTO;  // ← import your DTO
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.StoreDTO;
-import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.StorePriceDTO;
-import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities.ProductEntity;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities.StoreEntity;
-import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities.StorePriceEntity;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.repositories.StoreRepository;
-import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.repositories.StorePriceRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/stores")
@@ -23,85 +16,50 @@ import java.util.stream.Collectors;
 public class StoreController {
 
     private final StoreRepository storeRepository;
-    private final StorePriceRepository storePriceRepository;
 
-    public StoreController(
-            StoreRepository storeRepository,
-            StorePriceRepository storePriceRepository
+    public StoreController(StoreRepository storeRepository) {
+        this.storeRepository = storeRepository;
+    }
+
+    @PostMapping
+    public ResponseEntity<StoreDTO> createStore(
+            @RequestBody StoreCreateUpdateDTO body
     ) {
-        this.storeRepository      = storeRepository;
-        this.storePriceRepository = storePriceRepository;
+        StoreEntity entity = new StoreEntity();
+        entity.setName(body.getName());
+        entity.setIcon(body.getIcon());         // ← use getIcon()
+        entity.setLocation(body.getLocation());
+        entity.setContact(body.getContact());
+
+        StoreEntity saved = storeRepository.save(entity);
+
+        StoreDTO dto = new StoreDTO();
+        dto.setId(saved.getStoreId());
+        dto.setName(saved.getName());
+        dto.setIcon(saved.getIcon());
+        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 
-    /**
-     * GET /api/stores
-     * → List of all stores as StoreDTO
-     */
-    @GetMapping
-    public ResponseEntity<List<StoreDTO>> getAllStores() {
-        List<StoreDTO> dtos = storeRepository.findAll()
-                .stream()
-                .map(store -> {
-                    StoreDTO dto = new StoreDTO();
-                    dto.setId(store.getStoreId());
-                    dto.setName(store.getName());
-                    dto.setIcon(store.getIcon());
-                    return dto;
-                })
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(dtos);
-    }
-
-    /**
-     * GET /api/stores/{storeId}
-     * → Single StoreDTO by ID
-     */
-    @GetMapping("/{storeId}")
-    public ResponseEntity<StoreDTO> getStoreById(@PathVariable UUID storeId) {
+    @PutMapping("/{storeId}")
+    public ResponseEntity<StoreDTO> updateStore(
+            @PathVariable UUID storeId,
+            @RequestBody StoreCreateUpdateDTO body
+    ) {
         return storeRepository.findById(storeId)
-                .map(store -> {
+                .map(existing -> {
+                    existing.setName(body.getName());
+                    existing.setIcon(body.getIcon());     // ← use getIcon()
+                    existing.setLocation(body.getLocation());
+                    existing.setContact(body.getContact());
+
+                    StoreEntity saved = storeRepository.save(existing);
+
                     StoreDTO dto = new StoreDTO();
-                    dto.setId(store.getStoreId());
-                    dto.setName(store.getName());
-                    dto.setIcon(store.getIcon());
+                    dto.setId(saved.getStoreId());
+                    dto.setName(saved.getName());
+                    dto.setIcon(saved.getIcon());
                     return ResponseEntity.ok(dto);
                 })
-                .orElse(ResponseEntity.notFound().build());
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
-
-    /**
-     * GET /api/stores/{storeId}/products
-     * → All price‐tagged “products” for that store as StorePriceDTO
-     */
-    @GetMapping("/{storeId}/products")
-    public ResponseEntity<List<Map<String,Object>>> getProductsForStore(@PathVariable UUID storeId) {
-        List<Map<String,Object>> list = storePriceRepository
-                .findByStore_StoreId(storeId)
-                .stream()
-                .map(sp -> {
-                    Map<String,Object> m = new HashMap<>();
-
-                    // ⚡ include the PK of this price record so edits update instead of insert
-                    m.put("storePriceId", sp.getStorePriceId());
-
-                    // for audit/relational consistency
-                    m.put("storeId",  sp.getStore().getStoreId());
-                    m.put("price",    sp.getPrice());
-                    m.put("barcode",  sp.getBarcode());
-
-                    // flatten your ProductEntity
-                    m.put("productId",   sp.getProduct().getProductId());
-                    m.put("productName", sp.getProduct().getName());
-                    m.put("category",    sp.getProduct().getCategory().getName());
-                    m.put("description", sp.getProduct().getDescription());
-                    m.put("isActive",    sp.getProduct().isActive());
-
-                    return m;
-                })
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(list);
-    }
-
 }

@@ -16,10 +16,6 @@ public class CityAllocationService {
         this.usersRepo = usersRepo;
     }
 
-    /**
-     * Fetches raw [city, count] data from the repo and
-     * transforms it into our DTO.
-     */
     public CityAllocationDTO getCityAllocation() {
         List<Object[]> rows = usersRepo.countByCity();
 

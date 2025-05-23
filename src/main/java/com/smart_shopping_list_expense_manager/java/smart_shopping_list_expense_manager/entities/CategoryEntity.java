@@ -16,15 +16,12 @@ import java.util.UUID;
 @Entity
 @Table(name = "categories")
 public class CategoryEntity {
-
-    // 1) Use Postgres’s native UUID type instead of BINARY(16)
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(
             name = "UUID",
             strategy = "org.hibernate.id.UUIDGenerator"
     )
-    // 2) Tell DDL to create a 'uuid' column
     @Column(name = "category_id", updatable = false, nullable = false, columnDefinition = "uuid")
     private UUID id;
 
@@ -38,7 +35,7 @@ public class CategoryEntity {
     private Instant createdAt;
 
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
-    @JsonIgnore  // avoid infinite recursion
+    @JsonIgnore
     private List<ProductEntity> products = new ArrayList<>();
 
     @PrePersist

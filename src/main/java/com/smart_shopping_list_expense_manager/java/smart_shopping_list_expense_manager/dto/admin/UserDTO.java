@@ -35,7 +35,7 @@ public class UserDTO {
     private String  location;
 
     @NotBlank
-    private String  userType;    // "user" or "admin"
+    private String  userType;
 
     @NotNull
     private Boolean isActive;

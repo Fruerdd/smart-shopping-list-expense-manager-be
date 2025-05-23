@@ -23,24 +23,22 @@ public class OverviewService {
     }
 
     public List<OverviewItemDTO> getOverview(String period) {
-        // define time windows
         Instant now = Instant.now();
         Instant startCurrent, startPrevious, endPrevious = now;
 
         if ("lastWeek".equals(period)) {
             startCurrent  = now.minus(7, ChronoUnit.DAYS);
             startPrevious = now.minus(14, ChronoUnit.DAYS);
-        } else { // default "today"
+        } else {
             LocalDate today = LocalDate.now();
             startCurrent  = today.atStartOfDay(ZoneOffset.UTC).toInstant();
             startPrevious = today.minusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant();
         }
 
-        // fetch raw counts
         long viewsCurrent    = searchRepo.countByCreatedAtBetween(startCurrent, now);
         long viewsPrevious   = searchRepo.countByCreatedAtBetween(startPrevious, startCurrent);
 
-        long searchesCurrent  = viewsCurrent;  // same as "views" here, or you could count distinct terms
+        long searchesCurrent  = viewsCurrent;
         long searchesPrevious = viewsPrevious;
 
         long newUsersCurrent  = userRepo.countNewUsersBetween(startCurrent, now);
@@ -49,7 +47,6 @@ public class OverviewService {
         long activeCurrent    = userRepo.countActiveUsersAt(now);
         long activePrevious   = userRepo.countActiveUsersAt(startPrevious);
 
-        // helper to format +/-% change
         Function<long[], String> fmtChange = arr -> {
             long curr = arr[0], prev = arr[1];
             if (prev == 0) return curr == 0 ? "0%" : "+100%";

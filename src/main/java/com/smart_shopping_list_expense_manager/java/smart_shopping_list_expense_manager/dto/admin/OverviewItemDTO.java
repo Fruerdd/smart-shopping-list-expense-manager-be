@@ -1,4 +1,3 @@
-// OverviewItemDTO.java
 package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.admin;
 
 import lombok.*;
@@ -9,5 +8,5 @@ import lombok.*;
 public class OverviewItemDTO {
     private String title;
     private long   value;
-    private String change;   // e.g. "+5%" or "-2%"
+    private String change;
 }

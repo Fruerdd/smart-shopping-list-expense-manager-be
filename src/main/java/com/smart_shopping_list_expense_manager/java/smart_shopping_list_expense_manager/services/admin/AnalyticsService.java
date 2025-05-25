@@ -3,6 +3,7 @@ package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense
 
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.admin.DailySearchDTO;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.admin.MonthlyProductAddDTO;
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.admin.PopularShopDTO;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.admin.TopProductDTO;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.repositories.ProductSearchLogRepository;
 import jakarta.persistence.EntityManager;
@@ -102,5 +103,26 @@ public class AnalyticsService {
             ));
         }
         return list;
+    }
+
+    /**
+     * @return list of (store name, total appearances in shopping_list)
+     */
+    public List<PopularShopDTO> getPopularStores() {
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = em.createNativeQuery(
+                "SELECT s.name, COUNT(*) AS cnt " +
+                        "FROM shopping_list sl " +
+                        "JOIN stores s ON sl.store_id = s.store_id " +
+                        "GROUP BY s.name " +
+                        "ORDER BY cnt DESC"
+        ).getResultList();
+
+        return rows.stream()
+                .map(r -> new PopularShopDTO(
+                        (String) r[0],
+                        ((Number) r[1]).longValue()
+                ))
+                .collect(Collectors.toList());
     }
 }

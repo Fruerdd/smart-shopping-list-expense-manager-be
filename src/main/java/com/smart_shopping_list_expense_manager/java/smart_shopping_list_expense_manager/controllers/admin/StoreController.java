@@ -1,11 +1,13 @@
 package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.controllers.admin;
 
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.admin.PopularShopDTO;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.admin.StoreCreateUpdateDTO;  // ← import your DTO
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.StoreDTO;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.admin.StoreProductDTO;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities.StoreEntity;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.repositories.StoreRepository;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.repositories.StorePriceRepository;
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.services.admin.AnalyticsService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,12 +23,15 @@ public class StoreController {
 
     private final StoreRepository storeRepository;
     private final StorePriceRepository storePriceRepository;
+    private final AnalyticsService analyticsService;
     public StoreController(
             StoreRepository storeRepository,
-            StorePriceRepository storePriceRepository
+            StorePriceRepository storePriceRepository,
+            AnalyticsService analyticsService
     ) {
         this.storeRepository      = storeRepository;
         this.storePriceRepository = storePriceRepository;
+        this.analyticsService     = analyticsService;
     }
 
     @GetMapping
@@ -119,5 +124,11 @@ public class StoreController {
                 ))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/popular")
+    public ResponseEntity<List<PopularShopDTO>> getPopularShops() {
+        List<PopularShopDTO> list = analyticsService.getPopularStores();
+        return ResponseEntity.ok(list);
     }
 }

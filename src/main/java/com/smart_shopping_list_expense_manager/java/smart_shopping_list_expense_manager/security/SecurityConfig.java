@@ -3,6 +3,7 @@ package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.services.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -44,6 +45,7 @@ public class SecurityConfig {
                 // 3) Authorize
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/user/login", "/user/register").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/users/reviews", "/api/customers/reviews").permitAll()
                         .anyRequest().authenticated()
                 )
 

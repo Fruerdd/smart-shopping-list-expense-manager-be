@@ -1,4 +1,3 @@
-// src/main/java/com/smart_shopping_list_expense_manager/.../dto/admin/UserDTO.java
 package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.admin;
 
 import jakarta.validation.constraints.Email;
@@ -35,7 +34,7 @@ public class UserDTO {
     private String  location;
 
     @NotBlank
-    private String  userType;    // "user" or "admin"
+    private String  userType;
 
     @NotNull
     private Boolean isActive;

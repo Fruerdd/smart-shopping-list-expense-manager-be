@@ -16,6 +16,8 @@ import java.util.UUID;
 public interface UsersRepository extends JpaRepository<UsersEntity, UUID> {
     Optional<UsersEntity> findByEmail(String email);
 
+    List<UsersEntity> findByReviewScoreIsNotNullAndReviewContextIsNotNull();
+
     /** For City Allocation chart */
     @Query("SELECT u.location, COUNT(u) FROM UsersEntity u GROUP BY u.location")
     List<Object[]> countByCity();

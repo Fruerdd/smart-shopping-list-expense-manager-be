@@ -1,6 +1,7 @@
 package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.controllers;
 
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.CustomerDTO;
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.ReviewDTO;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities.UsersEntity;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.repositories.UsersRepository;
 import org.springframework.web.bind.annotation.*;
@@ -32,5 +33,24 @@ public class UsersController {
                         (user.getIsActive() != null && user.getIsActive()) ? "Active" : "Inactive"
                 ))
                 .collect(Collectors.toList());
+    }
+
+    @GetMapping("/reviews")
+    public List<ReviewDTO> getAllReviews() {
+        return usersRepository
+                .findByReviewScoreIsNotNullAndReviewContextIsNotNull()
+                .stream()
+                .map(this::toReviewDTO)
+                .collect(Collectors.toList());
+    }
+
+    /** Helper to convert entity → DTO */
+    private ReviewDTO toReviewDTO(UsersEntity u) {
+        return new ReviewDTO(
+                u.getName(),
+                u.getReviewScore(),
+                u.getReviewContext(),
+                u.getAvatar()
+        );
     }
 }

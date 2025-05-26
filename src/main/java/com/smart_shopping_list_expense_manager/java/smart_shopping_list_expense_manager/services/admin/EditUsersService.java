@@ -3,6 +3,7 @@ package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.admin.UserDTO;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities.UsersEntity;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.repositories.UsersRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,12 +13,13 @@ import java.util.stream.Collectors;
 @Service
 public class EditUsersService {
     private final UsersRepository repo;
+    private final PasswordEncoder passwordEncoder;
 
-    public EditUsersService(UsersRepository repo) {
+    public EditUsersService(UsersRepository repo, PasswordEncoder passwordEncoder) {
         this.repo = repo;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    /** Map DB entity → DTO */
     private UserDTO toDto(UsersEntity e) {
         UserDTO dto = new UserDTO();
         dto.setId(e.getUserId());
@@ -35,36 +37,42 @@ public class EditUsersService {
         dto.setReviewContext(e.getReviewContext());
         return dto;
     }
-
-    /** Map DTO → Entity (for both add & update) */
     private UsersEntity toEntity(UserDTO dto) {
         UsersEntity e = dto.getId() != null
                 ? repo.findById(dto.getId()).orElse(new UsersEntity())
                 : new UsersEntity();
+
         e.setName(dto.getName());
         e.setEmail(dto.getEmail());
-        e.setPassword(dto.getPassword());
+
+        // only update / hash the password if one was provided
+        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+            String hashed = passwordEncoder.encode(dto.getPassword());
+            e.setPassword(hashed);
+        }
+
         e.setPhoneNumber(dto.getPhoneNumber());
         e.setReferralCode(dto.getReferralCode());
         e.setPromoCode(dto.getPromoCode());
         e.setBonusPoints(dto.getBonusPoints());
         e.setDeviceInfo(dto.getDeviceInfo());
         e.setLocation(dto.getLocation());
-        e.setUserType(dto.getUserType());            // <-- role
+        e.setUserType(dto.getUserType());
         e.setIsActive(dto.getIsActive());
         e.setReviewScore(dto.getReviewScore());
         e.setReviewContext(dto.getReviewContext());
+
         return e;
     }
 
-    /** Retrieve everyone */
+
+
     public List<UserDTO> getAllUsers() {
         return repo.findAll().stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
 
-    /** Save all incoming, return DTOs */
     @Transactional
     public List<UserDTO> editMultipleUsers(List<UserDTO> dtos) {
         List<UsersEntity> saved = dtos.stream()

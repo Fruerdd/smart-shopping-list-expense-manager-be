@@ -43,20 +43,17 @@ public class ProductService {
     }
 
     private StorePriceEntity processSingleProduct(AddProductDTO dto) {
-        // 1) Load or create StorePriceEntity
         StorePriceEntity storePrice = dto.getStorePriceId() != null
                 ? storePriceRepository.findById(dto.getStorePriceId())
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Invalid storePriceId: " + dto.getStorePriceId()))
                 : new StorePriceEntity();
 
-        // 2) Associate store
         StoreEntity store = storeRepository.findById(dto.getStoreId())
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Invalid storeId: " + dto.getStoreId()));
         storePrice.setStore(store);
 
-        // 3) Find or create product
         ProductEntity product;
         if (dto.getProductId() != null) {
             product = productRepository.findById(dto.getProductId())
@@ -68,14 +65,12 @@ public class ProductService {
             product = new ProductEntity();
         }
 
-        // 4) Set basic product fields
         product.setName(dto.getProductName());
         product.setDescription(dto.getDescription());
         product.setActive(dto.isActive());
 
-        // 5) Resolve or create category
         CategoryEntity category = categoryRepository
-                .findByName(dto.getCategory())
+                .findFirstByNameIgnoreCase(dto.getCategory())
                 .orElseGet(() -> {
                     CategoryEntity c = new CategoryEntity();
                     c.setName(dto.getCategory());
@@ -83,18 +78,14 @@ public class ProductService {
                 });
         product.setCategory(category);
 
-        // 6) Associate store on product
         product.setStore(store);
 
-        // 7) Persist product
         productRepository.save(product);
         storePrice.setProduct(product);
 
-        // 8) Set price & barcode
         storePrice.setPrice(dto.getPrice());
         storePrice.setBarcode(dto.getBarcode());
 
-        // 9) Persist store-price record
         return storePriceRepository.save(storePrice);
     }
 }

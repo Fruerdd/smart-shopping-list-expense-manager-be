@@ -15,7 +15,6 @@ import java.util.UUID;
 @Table(name = "store_prices")
 public class StorePriceEntity {
 
-    // 1) Rename the field to match the getter you’re calling:
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")

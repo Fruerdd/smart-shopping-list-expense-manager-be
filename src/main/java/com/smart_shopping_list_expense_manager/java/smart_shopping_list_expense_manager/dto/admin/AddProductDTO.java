@@ -9,7 +9,6 @@ import java.util.UUID;
 
 @Data
 public class AddProductDTO {
-    // when editing an existing price record
     private UUID storePriceId;
 
     @NotNull
@@ -21,7 +20,7 @@ public class AddProductDTO {
     private String productName;
 
     @NotBlank
-    private String category;    // now a simple string
+    private String category;
 
     private String description;
 

@@ -9,5 +9,4 @@ public class ReviewDTO {
     private String name;
     private Double reviewScore;
     private String reviewContext;
-    private String avatar;
 }

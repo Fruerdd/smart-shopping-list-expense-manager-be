@@ -44,13 +44,11 @@ public class UsersController {
                 .collect(Collectors.toList());
     }
 
-    /** Helper to convert entity → DTO */
     private ReviewDTO toReviewDTO(UsersEntity u) {
         return new ReviewDTO(
                 u.getName(),
                 u.getReviewScore(),
-                u.getReviewContext(),
-                u.getAvatar()
+                u.getReviewContext()
         );
     }
 }

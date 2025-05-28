@@ -2,6 +2,7 @@ package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense
 
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.*;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities.UsersEntity;
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.repositories.FriendsRepository;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.repositories.UsersRepository;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.services.AuthService;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,8 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.UUID;
 
+import static java.util.stream.Collectors.toList;
+
 @RestController
 @RequestMapping("/user")
 @CrossOrigin(origins = "http://localhost:4200")
@@ -21,10 +24,12 @@ public class AuthController {
 
     private final AuthService authService;
     private final UsersRepository usersRepository;
+    private final FriendsRepository friendsRepository;
 
-    public AuthController(AuthService authService, UsersRepository usersRepository) {
+    public AuthController(AuthService authService, UsersRepository usersRepository, FriendsRepository friendsRepository) {
         this.authService = authService;
         this.usersRepository = usersRepository;
+        this.friendsRepository = friendsRepository;
     }
 
     @PostMapping("/register")
@@ -55,8 +60,10 @@ public class AuthController {
         dto.setId(user.getUserId());
         dto.setEmail(user.getEmail());
         dto.setName(user.getName());
+        dto.setPhone(user.getPhoneNumber());
+        dto.setAddress(user.getLocation());
+        dto.setBonus_points(user.getBonusPoints());
         dto.setShoppingLists(List.of());
-
         return ResponseEntity.ok(dto);
     }
 
@@ -126,15 +133,14 @@ public class AuthController {
         UsersEntity user = usersRepository.findById(uuid)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-        // TODO: Replace with actual friends implementation
-        // For now, return all users except the current user as potential friends
-        List<UserDTO> friends = usersRepository.findAll().stream()
-                .filter(u -> !u.getUserId().equals(uuid))
-                .map(u -> {
+        // Query for friendships where the current user is involved
+        List<UserDTO> friends = friendsRepository.findByUser(user).stream()
+                .map(friend -> {
                     UserDTO dto = new UserDTO();
-                    dto.setId(u.getUserId());
-                    dto.setEmail(u.getEmail());
-                    dto.setName(u.getName());
+                    dto.setId(friend.getFriend().getUserId());
+                    dto.setEmail(friend.getFriend().getEmail());
+                    dto.setName(friend.getFriend().getName());
+                    dto.setShoppingLists(List.of());
                     return dto;
                 })
                 .toList();
@@ -213,4 +219,67 @@ public class AuthController {
 
         return ResponseEntity.ok(responseDTO);
     }
+
+    @GetMapping("/profile/loyalty-points/{id}")
+    public ResponseEntity<Integer> getLoyaltyPoints(@PathVariable String id) {
+        UUID uuid;
+        try {
+            uuid = UUID.fromString(id);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid UUID format");
+        }
+
+        UsersEntity user = usersRepository.findById(uuid)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        Integer loyaltyPoints = user.getBonusPoints();
+        if (loyaltyPoints == null) {
+            loyaltyPoints = 0; // Default to 0 if not set
+        }
+
+        return ResponseEntity.ok(loyaltyPoints);
+    }
+
+    @PutMapping("/profile/loyalty-points/{id}")
+    public ResponseEntity<Integer> updateLoyaltyPoints(@PathVariable String id, @RequestParam Integer points) {
+        UUID uuid;
+        try {
+            uuid = UUID.fromString(id);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid UUID format");
+        }
+
+        UsersEntity user = usersRepository.findById(uuid)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        if (points < 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Points cannot be negative");
+        }
+
+        user.setBonusPoints(points);
+        UsersEntity updatedUser = usersRepository.save(user);
+
+        return ResponseEntity.ok(updatedUser.getBonusPoints());
+    }
+
+    @GetMapping("/profile/reviews/{id}")
+    public ResponseEntity<ReviewDTO> getUserReviews(@PathVariable String id) {
+        UUID uuid;
+        try {
+            uuid = UUID.fromString(id);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid UUID format");
+        }
+
+        UsersEntity user = usersRepository.findById(uuid)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+
+        return ResponseEntity.ok(new ReviewDTO(
+                user.getName(),
+                user.getReviewScore(),
+                user.getReviewContext()
+        ));
+    }
 }
+        

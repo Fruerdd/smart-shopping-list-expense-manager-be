@@ -315,6 +315,20 @@ public class UserDashboardService {
                 .stream().noneMatch(c -> c.getPermission() == PermissionEnum.EDIT);
     }
 
+    public void updateCollaborator(UUID id, UUID listId, UUID collaboratorId, CollaboratorDTO collaboratorDTO) {
+        usersRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+        ShoppingListEntity list = shoppingListRepository.findById(listId)
+                .orElseThrow(() -> new ResourceNotFoundException("Shopping list not found with id: " + listId));
+        if (!list.getOwner().getUserId().equals(id)) {
+            throw new ResourceNotFoundException("Only the owner can update collaborators");
+        }
+        CollaboratorEntity collaborator = collaboratorRepository.findByShoppingList_IdAndUser_UserId(listId, collaboratorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Collaborator not found for user id: " + collaboratorId + " in list: " + listId));
+        collaborator.setPermission(PermissionEnum.valueOf(collaboratorDTO.getPermission()));
+        collaboratorRepository.save(collaborator);
+    }
+
     public LoyaltyTierEnum getUserLoyaltyTier(UUID userId) {
         UsersEntity user = usersRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));

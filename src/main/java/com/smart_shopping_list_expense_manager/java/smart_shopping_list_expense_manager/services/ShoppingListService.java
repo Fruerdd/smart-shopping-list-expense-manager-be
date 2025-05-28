@@ -9,8 +9,7 @@ import org.springframework.stereotype.Service;
 import jakarta.persistence.EntityManager;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -138,20 +137,56 @@ public class ShoppingListService {
         shoppingList.getItems().addAll(items);
 
         // Update collaborators
-        shoppingList.getCollaborators().clear();
-        List<CollaboratorEntity> collaborators = shoppingListDTO.getCollaborators().stream().map(collabDTO -> {
-            UsersEntity user = usersRepository.findById(collabDTO.getUserId())
-                    .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + collabDTO.getUserId()));
-            CollaboratorEntity collaborator = new CollaboratorEntity();
-            collaborator.setShoppingList(shoppingList);
-            collaborator.setUser(user);
-            collaborator.setPermission(PermissionEnum.valueOf(collabDTO.getPermission()));
-            return collaborator;
-        }).toList();
-        shoppingList.getCollaborators().addAll(collaborators);
+        updateCollaborators(shoppingList, shoppingListDTO.getCollaborators());
 
         ShoppingListEntity saved = shoppingListRepository.save(shoppingList);
         return convertToDTO(saved);
+    }
+
+    private void updateCollaborators(ShoppingListEntity shoppingList, List<CollaboratorDTO> newCollaborators) {
+        // Get current collaborators
+        List<CollaboratorEntity> existingCollaborators = new ArrayList<>(shoppingList.getCollaborators());
+
+        // Create sets for easy comparison
+        Set<UUID> newCollaboratorUserIds = newCollaborators.stream()
+                .map(CollaboratorDTO::getUserId)
+                .collect(Collectors.toSet());
+
+        // Remove collaborators that are no longer needed
+        existingCollaborators.removeIf(collaborator -> {
+            UUID userId = collaborator.getUser().getUserId();
+            if (!newCollaboratorUserIds.contains(userId)) {
+                shoppingList.getCollaborators().remove(collaborator);
+                return true;
+            }
+            return false;
+        });
+
+        // Update existing collaborators and add new ones
+        for (CollaboratorDTO collabDTO : newCollaborators) {
+            UUID userId = collabDTO.getUserId();
+
+            // Check if this collaborator already exists
+            Optional<CollaboratorEntity> existingCollaborator = shoppingList.getCollaborators().stream()
+                    .filter(c -> c.getUser().getUserId().equals(userId))
+                    .findFirst();
+
+            if (existingCollaborator.isPresent()) {
+                // Update existing collaborator's permission
+                existingCollaborator.get().setPermission(PermissionEnum.valueOf(collabDTO.getPermission()));
+            } else {
+                // Add new collaborator
+                UsersEntity user = usersRepository.findById(userId)
+                        .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+                CollaboratorEntity newCollaborator = new CollaboratorEntity();
+                newCollaborator.setShoppingList(shoppingList);
+                newCollaborator.setUser(user);
+                newCollaborator.setPermission(PermissionEnum.valueOf(collabDTO.getPermission()));
+
+                shoppingList.getCollaborators().add(newCollaborator);
+            }
+        }
     }
 
 //    public ShoppingListItemDTO updateShoppingListItem(UUID shoppingListId, UUID itemId, ShoppingListItemDTO itemDTO) {

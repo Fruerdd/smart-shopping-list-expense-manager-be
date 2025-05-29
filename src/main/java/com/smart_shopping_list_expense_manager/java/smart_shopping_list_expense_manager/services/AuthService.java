@@ -8,6 +8,7 @@ import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.security.JwtUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import java.util.Random;
 
 @Service
 public class AuthService {
@@ -39,9 +40,33 @@ public class AuthService {
         user.setEmail(dto.getEmail());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setIsActive(true);
+        user.setUserType("USER");
+        user.setBonusPoints(0);
+        user.setDeviceInfo("Change this yourself");
+        user.setPhoneNumber("1234567890");
+        user.setReferralCode(generateReferralCode());
+        user.setPromoCode(generatePromoCode());
+        user.setAvatar("https://i.ibb.co/0r00000/default-avatar.png");
+        user.setReviewScore(0.0);
+        user.setReviewContext("No reviews yet");
+        user.setLocation("Change this yourself");
 
         usersRepository.save(user);
         return "User registered successfully";
+    }
+
+    private String generateReferralCode() {
+        Random random = new Random();
+        int randomNumber = random.nextInt(10000);
+        String randomNumberString = String.format("%04d", randomNumber);
+        return "REF" + randomNumberString.toUpperCase();
+    }
+
+    private String generatePromoCode() {
+        Random random = new Random();
+        int randomNumber = random.nextInt(10000);
+        String randomNumberString = String.format("%04d", randomNumber);
+        return "PROMO" + randomNumberString.toUpperCase();
     }
 
     /**

@@ -114,6 +114,12 @@ public class UserDashboardController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/{id}/shopping-lists/{listId}/collaborators/{collaboratorId}")
+    public ResponseEntity<Void> updateCollaborator(@PathVariable UUID id, @PathVariable UUID listId, @PathVariable UUID collaboratorId, @RequestBody CollaboratorDTO collaboratorDTO) {
+        userService.updateCollaborator(id, listId, collaboratorId, collaboratorDTO);
+        return ResponseEntity.ok().build();
+    }
+
     @DeleteMapping("/{id}/shopping-lists/{listId}/collaborators/{collaboratorId}")
     public ResponseEntity<Void> removeCollaborator(@PathVariable UUID id, @PathVariable UUID listId, @PathVariable UUID collaboratorId) {
         userService.removeCollaborator(id, listId, collaboratorId);

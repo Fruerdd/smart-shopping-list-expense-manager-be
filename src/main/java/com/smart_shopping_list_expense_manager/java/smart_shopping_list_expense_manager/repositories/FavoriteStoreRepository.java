@@ -11,6 +11,6 @@ import java.util.UUID;
 
 @Repository
 public interface FavoriteStoreRepository extends JpaRepository<FavoriteStoreEntity, UUID> {
-    @Query("SELECT fs FROM FavoriteStoreEntity fs WHERE fs.user.userId = :userId AND fs.store.storeId = :storeId")
+    @Query("SELECT fs FROM FavoriteStoreEntity fs WHERE fs.user.userId = :userId AND fs.id = :storeId")
     Optional<FavoriteStoreEntity> findByUserIdAndStoreId(@Param("userId") UUID userId, @Param("storeId") UUID storeId);
 }

@@ -104,10 +104,8 @@ public class UserDashboardService {
     public void removeFavoriteProduct(UUID userId, UUID productId) {
         usersRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
-        FavoriteProductEntity favoriteProduct = favoriteProductRepository.findAll().stream()
-                .filter(fp -> fp.getUser().getUserId().equals(userId) && fp.getProduct().getProductId().equals(productId))
-                .findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException("Favorite product not found for user: " + userId));
+        FavoriteProductEntity favoriteProduct = favoriteProductRepository.findByUserIdAndProductId(userId, productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Favorite product not found for user: " + userId + " and product: " + productId));
         favoriteProductRepository.delete(favoriteProduct);
     }
 
@@ -156,9 +154,7 @@ public class UserDashboardService {
     public void removeFavoriteStore(UUID userId, UUID storeId) {
         usersRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
-        FavoriteStoreEntity favoriteStore = favoriteStoreRepository.findAll().stream()
-                .filter(fs -> fs.getUser().getUserId().equals(userId) && fs.getStore().getStoreId().equals(storeId))
-                .findFirst()
+        FavoriteStoreEntity favoriteStore = favoriteStoreRepository.findByUserIdAndStoreId(userId, storeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Favorite store not found for user: " + userId));
         favoriteStoreRepository.delete(favoriteStore);
     }
@@ -208,7 +204,7 @@ public class UserDashboardService {
     public List<StorePriceDTO> getProductPrices(UUID userId, UUID productId) {
         usersRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
-        ProductEntity product = productRepository.findById(productId)
+        productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
         List<StorePriceEntity> storePrices = storePriceRepository.findByProduct_ProductId(productId);
         return storePrices.stream()
@@ -242,7 +238,7 @@ public class UserDashboardService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
         ShoppingListEntity list = shoppingListRepository.findById(listId)
                 .orElseThrow(() -> new ResourceNotFoundException("Shopping list not found with id: " + listId));
-        if (!list.getOwner().getUserId().equals(userId) && !hasEditPermission(userId, listId)) {
+        if (!list.getOwner().getUserId().equals(userId) && hasEditPermission(userId, listId)) {
             throw new ResourceNotFoundException("User does not have permission to update this list");
         }
         shoppingListDTO.setId(listId);
@@ -254,7 +250,7 @@ public class UserDashboardService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
         ShoppingListEntity list = shoppingListRepository.findById(listId)
                 .orElseThrow(() -> new ResourceNotFoundException("Shopping list not found with id: " + listId));
-        if (!list.getOwner().getUserId().equals(userId) && !hasEditPermission(userId, listId)) {
+        if (!list.getOwner().getUserId().equals(userId) && hasEditPermission(userId, listId)) {
             throw new ResourceNotFoundException("User does not have permission to delete this list");
         }
         shoppingListService.softDeleteShoppingList(listId);
@@ -265,12 +261,11 @@ public class UserDashboardService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
         ShoppingListEntity list = shoppingListRepository.findById(listId)
                 .orElseThrow(() -> new ResourceNotFoundException("Shopping list not found with id: " + listId));
-        if (!list.getOwner().getUserId().equals(userId) && !hasEditPermission(userId, listId)) {
+        if (!list.getOwner().getUserId().equals(userId) && hasEditPermission(userId, listId)) {
             throw new ResourceNotFoundException("User does not have permission to update this item");
         }
-        // Logic to update item (assuming a new method in ShoppingListService or direct repository access)
         ShoppingListItemEntity item = list.getItems().stream()
-                .filter(i -> i.getProduct().getProductId().equals(itemId))
+                .filter(i -> i.getId().equals(itemId))
                 .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundException("Item not found with id: " + itemId));
         item.setChecked(itemDTO.isChecked());
@@ -317,7 +312,21 @@ public class UserDashboardService {
 
     private boolean hasEditPermission(UUID userId, UUID listId) {
         return collaboratorRepository.findByShoppingList_IdAndUser_UserId(listId, userId)
-                .stream().anyMatch(c -> c.getPermission() == PermissionEnum.EDIT);
+                .stream().noneMatch(c -> c.getPermission() == PermissionEnum.EDIT);
+    }
+
+    public void updateCollaborator(UUID id, UUID listId, UUID collaboratorId, CollaboratorDTO collaboratorDTO) {
+        usersRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+        ShoppingListEntity list = shoppingListRepository.findById(listId)
+                .orElseThrow(() -> new ResourceNotFoundException("Shopping list not found with id: " + listId));
+        if (!list.getOwner().getUserId().equals(id)) {
+            throw new ResourceNotFoundException("Only the owner can update collaborators");
+        }
+        CollaboratorEntity collaborator = collaboratorRepository.findByShoppingList_IdAndUser_UserId(listId, collaboratorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Collaborator not found for user id: " + collaboratorId + " in list: " + listId));
+        collaborator.setPermission(PermissionEnum.valueOf(collaboratorDTO.getPermission()));
+        collaboratorRepository.save(collaborator);
     }
 
     public LoyaltyTierEnum getUserLoyaltyTier(UUID userId) {
@@ -370,7 +379,7 @@ public class UserDashboardService {
         dto.setProductId(item.getProduct().getProductId());
         dto.setProductName(item.getProduct().getName());
         dto.setQuantity(item.getQuantity() != null ? item.getQuantity().doubleValue() : null);
-        dto.setChecked(item.isChecked());
+        dto.setIsChecked(item.isChecked());
         dto.setStatus(item.getStatus());
         return dto;
     }

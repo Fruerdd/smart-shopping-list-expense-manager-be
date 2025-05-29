@@ -20,4 +20,8 @@ public class ShoppingListItemDTO {
     private Double quantity;
     private boolean isChecked;
     private String status;
+
+    public void setIsChecked(boolean isChecked) {
+        this.isChecked = isChecked;
+    }
 }

@@ -6,8 +6,10 @@ import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities.UsersEntity;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.repositories.UsersRepository;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.security.JwtUtil;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import java.util.Random;
 
 @Service
@@ -32,7 +34,7 @@ public class AuthService {
      */
     public String register(RegisterDTO dto) {
         if (usersRepository.existsByEmail(dto.getEmail())) {
-            throw new RuntimeException("Email already registered");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already registered");
         }
 
         UsersEntity user = new UsersEntity();
@@ -46,7 +48,7 @@ public class AuthService {
         user.setPhoneNumber("1234567890");
         user.setReferralCode(generateReferralCode());
         user.setPromoCode(generatePromoCode());
-        user.setAvatar("https://i.ibb.co/0r00000/default-avatar.png");
+        user.setAvatar("https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png");
         user.setReviewScore(0.0);
         user.setReviewContext("No reviews yet");
         user.setLocation("Change this yourself");
@@ -74,17 +76,17 @@ public class AuthService {
      */
     public AuthResponse login(AuthDTO authDTO) {
         UsersEntity user = usersRepository.findByEmail(authDTO.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password"));
 
         if (!passwordEncoder.matches(authDTO.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid credentials");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password");
         }
 
         String token = jwtUtil.generateToken(user.getEmail());
         return new AuthResponse(
                 token,
                 "Login successful",
-                user.getUserType()     // ← must match the DTO’s `userType` field
+                user.getUserType()     // ← must match the DTO's `userType` field
         );
     }
 }

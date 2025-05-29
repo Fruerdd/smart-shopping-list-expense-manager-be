@@ -44,9 +44,10 @@ public class SecurityConfig {
 
                 // 3) Authorize
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/user/login", "/user/register").permitAll()
+                        .requestMatchers("/auth/login", "/auth/register").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/users/reviews", "/api/customers/reviews").permitAll()
                         .requestMatchers(HttpMethod.GET, "/uploads/**", "/assets/**").permitAll()
+                        .requestMatchers("/user/**").authenticated()
                         .anyRequest().authenticated()
                 )
 
@@ -69,8 +70,9 @@ public class SecurityConfig {
         cfg.setAllowedOrigins(List.of("http://localhost:4200"));
         cfg.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
         cfg.setAllowedHeaders(List.of("*")); // Allow all headers
-        cfg.setExposedHeaders(List.of("Authorization"));
+        cfg.setExposedHeaders(List.of("Authorization", "Content-Type"));
         cfg.setAllowCredentials(true);
+        cfg.setMaxAge(3600L); // Cache preflight response for 1 hour
 
         UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
         src.registerCorsConfiguration("/**", cfg);

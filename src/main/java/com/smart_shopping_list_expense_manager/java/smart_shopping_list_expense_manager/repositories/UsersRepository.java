@@ -16,6 +16,12 @@ import java.util.UUID;
 public interface UsersRepository extends JpaRepository<UsersEntity, UUID> {
     Optional<UsersEntity> findByEmail(String email);
 
+    Optional<UsersEntity> findByReferralCode(String referralCode);
+
+    Optional<UsersEntity> findByPromoCode(String promoCode);
+
+    List<UsersEntity> findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(String name, String email);
+
     List<UsersEntity> findByReviewScoreIsNotNullAndReviewContextIsNotNull();
 
     /** For City Allocation chart */

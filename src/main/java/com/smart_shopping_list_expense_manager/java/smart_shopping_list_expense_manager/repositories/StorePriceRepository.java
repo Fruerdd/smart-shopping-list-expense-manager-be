@@ -4,10 +4,13 @@ import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface StorePriceRepository extends JpaRepository<StorePriceEntity, UUID> {
     List<StorePriceEntity> findByStore_StoreId(UUID storeId);
     List<StorePriceEntity> findByProduct_ProductId(UUID productId);
+    Optional<StorePriceEntity>
+    findFirstByProductProductIdOrderByCreatedAtDesc(UUID productId);
 }

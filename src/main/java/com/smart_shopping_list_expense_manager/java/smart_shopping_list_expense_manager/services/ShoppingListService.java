@@ -23,6 +23,7 @@ public class ShoppingListService {
     private final ShoppingListItemRepository shoppingListItemRepository;
     private final CollaboratorRepository collaboratorRepository;
     private final EntityManager entityManager;
+    private final NotificationService notificationService;
 
     public ShoppingListService(ShoppingListRepository shoppingListRepository,
                                ProductRepository productRepository,
@@ -32,7 +33,8 @@ public class ShoppingListService {
                                StorePriceRepository storePriceRepository,
                                ShoppingListItemRepository shoppingListItemRepository,
                                CollaboratorRepository collaboratorRepository,
-                               EntityManager entityManager) {
+                               EntityManager entityManager,
+                               NotificationService notificationService) {
         this.shoppingListRepository = shoppingListRepository;
         this.productRepository = productRepository;
         this.usersRepository = usersRepository;
@@ -42,6 +44,7 @@ public class ShoppingListService {
         this.shoppingListItemRepository = shoppingListItemRepository;
         this.collaboratorRepository = collaboratorRepository;
         this.entityManager = entityManager;
+        this.notificationService = notificationService;
     }
 
     public ShoppingListDTO createShoppingList(ShoppingListDTO shoppingListDTO) {
@@ -85,6 +88,12 @@ public class ShoppingListService {
             collaborator.setShoppingList(shoppingList);
             collaborator.setUser(user);
             collaborator.setPermission(PermissionEnum.valueOf(collabDTO.getPermission()));
+            
+            // Create notification for the collaborator (but not for the owner)
+            if (!user.getUserId().equals(owner.getUserId())) {
+                notificationService.createCollaboratorAddedNotification(owner, user, shoppingListDTO.getName());
+            }
+            
             return collaborator;
         }).collect(Collectors.toList());
         shoppingList.setCollaborators(collaborators);
@@ -185,6 +194,11 @@ public class ShoppingListService {
                 newCollaborator.setPermission(PermissionEnum.valueOf(collabDTO.getPermission()));
 
                 shoppingList.getCollaborators().add(newCollaborator);
+                
+                // Create notification for the new collaborator (but not for the owner)
+                if (!user.getUserId().equals(shoppingList.getOwner().getUserId())) {
+                    notificationService.createCollaboratorAddedNotification(shoppingList.getOwner(), user, shoppingList.getName());
+                }
             }
         }
     }

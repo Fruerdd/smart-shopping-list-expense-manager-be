@@ -1,201 +1,247 @@
 package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.services;
 
-import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.*;
-import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities.*;
-import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.repositories.*;
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.UserDTO;
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.UserStatisticsDTO;
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities.FriendsEntity;
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities.UsersEntity;
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.repositories.FriendsRepository;
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.repositories.UsersRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.math.BigDecimal;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class UserProfileService {
 
-    private final UsersRepository             usersRepo;
-    private final FriendsRepository           friendsRepo;
-    private final ShoppingListRepository      listRepo;
-    private final ShoppingListItemRepository  itemRepo;
-    private final StorePriceRepository        priceRepo;
-    private final NotificationService         notificationService;
+    private final UsersRepository usersRepository;
+    private final FriendsRepository friendsRepository;
+    private final NotificationService notificationService;
 
-    public UserProfileService(
-            UsersRepository usersRepo,
-            FriendsRepository friendsRepo,
-            ShoppingListRepository listRepo,
-            ShoppingListItemRepository itemRepo,
-            StorePriceRepository priceRepo,
-            NotificationService notificationService
-    ) {
-        this.usersRepo           = usersRepo;
-        this.friendsRepo         = friendsRepo;
-        this.listRepo            = listRepo;
-        this.itemRepo            = itemRepo;
-        this.priceRepo           = priceRepo;
+    public UserProfileService(UsersRepository usersRepository,
+                              FriendsRepository friendsRepository,
+                              NotificationService notificationService) {
+        this.usersRepository = usersRepository;
+        this.friendsRepository = friendsRepository;
         this.notificationService = notificationService;
     }
 
-    // --- Basic Profile CRUD -----------------------------------------------
-
     public UserDTO getUserProfile(UUID userId) {
-        return toDto(findUserOr404(userId));
+        UsersEntity user = usersRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        return mapToUserDTO(user);
     }
 
     public UserDTO getCurrentUserProfile() {
-        String email = currentEmail();
-        return toDto(
-            usersRepo.findByEmail(email)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Current user not found"))
-        );
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUserEmail = authentication.getName();
+
+        UsersEntity user = usersRepository.findByEmail(currentUserEmail)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Current user not found"));
+
+        return mapToUserDTO(user);
     }
 
-    public UserDTO updateUserProfile(UUID userId, UserDTO in) {
-        UsersEntity u = validateAccess(userId);
-        Optional.ofNullable(in.getName()).ifPresent(u::setName);
-        Optional.ofNullable(in.getPhone()).ifPresent(u::setPhoneNumber);
-        Optional.ofNullable(in.getAddress()).ifPresent(u::setLocation);
-        Optional.ofNullable(in.getAvatar()).ifPresent(u::setAvatar);
-        return toDto(usersRepo.save(u));
+    public UserDTO updateUserProfile(UUID userId, UserDTO userDTO) {
+        UsersEntity user = validateUserAccess(userId);
+
+        if (userDTO.getName() != null) {
+            user.setName(userDTO.getName());
+        }
+        if (userDTO.getPhone() != null) {
+            user.setPhoneNumber(userDTO.getPhone());
+        }
+        if (userDTO.getAddress() != null) {
+            user.setLocation(userDTO.getAddress());
+        }
+
+        UsersEntity updatedUser = usersRepository.save(user);
+        return mapToUserDTO(updatedUser);
     }
 
-    // --- Friends ----------------------------------------------------------
+    public UserDTO patchUserProfile(UUID userId, UserDTO userDTO) {
+        UsersEntity user = validateUserAccess(userId);
+
+        if (userDTO.getName() != null) {
+            user.setName(userDTO.getName());
+        }
+        if (userDTO.getPhone() != null) {
+            user.setPhoneNumber(userDTO.getPhone());
+        }
+        if (userDTO.getAddress() != null) {
+            user.setLocation(userDTO.getAddress());
+        }
+        if (userDTO.getAvatar() != null) {
+            user.setAvatar(userDTO.getAvatar());
+        }
+
+        UsersEntity updatedUser = usersRepository.save(user);
+        return mapToUserDTO(updatedUser);
+    }
 
     public List<UserDTO> getUserFriends(UUID userId) {
-        UsersEntity user = findUserOr404(userId);
-        Set<FriendsEntity> all = new HashSet<>();
-        all.addAll(friendsRepo.findByUser(user));
-        all.addAll(friendsRepo.findByFriend(user));
-        return all.stream()
-            .map(f -> {
-                UsersEntity other = f.getUser().equals(user) ? f.getFriend() : f.getUser();
-                return toDto(other);
-            })
-            .collect(Collectors.toList());
+        UsersEntity user = usersRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        List<FriendsEntity> friendships1 = friendsRepository.findByUser(user);
+        List<FriendsEntity> friendships2 = friendsRepository.findByFriend(user);
+
+        Set<UserDTO> friendsSet = new HashSet<>();
+        friendships1.forEach(f -> friendsSet.add(mapToBasicUserDTO(f.getFriend())));
+        friendships2.forEach(f -> friendsSet.add(mapToBasicUserDTO(f.getUser())));
+
+        return new ArrayList<>(friendsSet);
     }
 
     public String sendFriendRequest(UUID userId, UUID friendId) {
-        UsersEntity user   = validateAccess(userId);
-        UsersEntity target = findUserOr404(friendId);
+        UsersEntity user = validateUserAccess(userId);
 
-        if (user.equals(target)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot friend yourself");
+        if (userId.equals(friendId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You cannot send a friend request to yourself");
         }
-        boolean exists = friendsRepo.findFriendshipBetweenUsers(user, target).isPresent();
-        if (exists) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Already friends");
+
+        UsersEntity friendUser = usersRepository.findById(friendId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        Optional<FriendsEntity> existingFriendship =
+                friendsRepository.findFriendshipBetweenUsers(user, friendUser);
+        if (existingFriendship.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You are already friends with this user");
         }
-        notificationService.createFriendRequestNotification(user, target);
-        return "Friend request sent";
+
+        notificationService.createFriendRequestNotification(user, friendUser);
+        return "Friend request sent successfully!";
     }
 
     public String acceptFriendRequest(UUID userId, UUID requesterId) {
-        UsersEntity me  = validateAccess(userId);
-        UsersEntity you = findUserOr404(requesterId);
-        if (friendsRepo.findFriendshipBetweenUsers(me, you).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Already friends");
+        UsersEntity user = validateUserAccess(userId);
+
+        UsersEntity requester = usersRepository.findById(requesterId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requester not found"));
+
+        Optional<FriendsEntity> existingFriendship =
+                friendsRepository.findFriendshipBetweenUsers(user, requester);
+        if (existingFriendship.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You are already friends with this user");
         }
-        FriendsEntity f = new FriendsEntity();
-        f.setUser(you);
-        f.setFriend(me);
-        friendsRepo.save(f);
-        return "Friend request accepted";
+
+        FriendsEntity friendship = new FriendsEntity();
+        friendship.setUser(requester);
+        friendship.setFriend(user);
+        friendsRepository.save(friendship);
+
+        return "Friend request accepted!";
+    }
+
+    public String declineFriendRequest(UUID userId, UUID requesterId) {
+        validateUserAccess(userId);
+        usersRepository.findById(requesterId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requester not found"));
+        return "Friend request declined.";
     }
 
     public String removeFriend(UUID userId, UUID friendId) {
-        UsersEntity me  = validateAccess(userId);
-        UsersEntity you = findUserOr404(friendId);
+        UsersEntity user = validateUserAccess(userId);
 
-        // delete both possible directions
-        friendsRepo.findByUserAndFriend(me, you).ifPresent(friendsRepo::delete);
-        friendsRepo.findByUserAndFriend(you, me).ifPresent(friendsRepo::delete);
-        return "Friend removed";
-    }
+        UsersEntity friendUser = usersRepository.findById(friendId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Friend user not found"));
 
-    // --- Search -----------------------------------------------------------
-
-    public List<UserDTO> searchUsers(String q) {
-        if (q == null || q.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Empty query");
+        boolean removed = false;
+        Optional<FriendsEntity> f1 = friendsRepository.findByUserAndFriend(user, friendUser);
+        if (f1.isPresent()) {
+            friendsRepository.delete(f1.get());
+            removed = true;
         }
-        return usersRepo
-            .findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(q, q)
-            .stream()
-            .map(this::toDto)
-            .collect(Collectors.toList());
-    }
+        Optional<FriendsEntity> f2 = friendsRepository.findByUserAndFriend(friendUser, user);
+        if (f2.isPresent()) {
+            friendsRepository.delete(f2.get());
+            removed = true;
+        }
+        if (!removed) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Friendship not found");
+        }
 
-    // --- Statistics -------------------------------------------------------
+        return "Friend removed successfully!";
+    }
 
     public UserStatisticsDTO getUserStatistics(UUID userId) {
-        UsersEntity user = findUserOr404(userId);
-
-        long totalLists = listRepo.countByOwnerUserId(userId);
-        long totalItems = itemRepo.countByShoppingListOwnerUserId(userId);
-
-        // compute total spent
-        List<ShoppingListItemEntity> items = itemRepo.findByShoppingListOwnerUserId(userId);
-        BigDecimal totalSpent = items.stream()
-            .map(it -> priceRepo
-                          .findFirstByProductProductIdOrderByCreatedAtDesc(it.getProduct().getProductId())
-                          .map(StorePriceEntity::getPrice)
-                          .orElse(BigDecimal.ZERO)
-                        .multiply(it.getQuantity()))
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        double spent = totalSpent.doubleValue();
-        double avg   = totalLists > 0 ? spent / totalLists : 0.0;
+        UsersEntity user = usersRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
         UserStatisticsDTO stats = new UserStatisticsDTO();
-        stats.setUserId(userId);
-        stats.setTotalLists((int) totalLists);
-        stats.setTotalItems((int) totalItems);
-        stats.setTotalSpent(spent);
-        stats.setAverageSpentPerList(avg);
+        stats.setUserId(user.getUserId());
+        stats.setTotalLists(0);
+        stats.setTotalItems(0);
+        stats.setTotalSpent(0.0);
+        stats.setAverageSpentPerList(0.0);
+        stats.setMostFrequentStore("N/A");
+        stats.setMostBoughtItem("N/A");
         return stats;
     }
 
-    // --- Internals --------------------------------------------------------
-
-    private UsersEntity findUserOr404(UUID id) {
-        return usersRepo.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-    }
-
-    private String currentEmail() {
-        return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
-            .map(Authentication::getName)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
-    }
-
-    private UsersEntity validateAccess(UUID userId) {
-        UsersEntity u = findUserOr404(userId);
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        boolean isAdmin = auth.getAuthorities().stream()
-            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        if (!u.getEmail().equals(auth.getName()) && !isAdmin) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No permission");
+    public List<UserDTO> searchUsers(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Search query cannot be empty");
         }
-        return u;
+        List<UsersEntity> users =
+                usersRepository.findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(query, query);
+        return users.stream()
+                .map(this::mapToBasicUserDTO)
+                .toList();
     }
 
-    private UserDTO toDto(UsersEntity u) {
+    private UsersEntity validateUserAccess(UUID userId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String currentEmail = auth.getName();
+        UsersEntity user = usersRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        if (!user.getEmail().equals(currentEmail) && !isAdmin) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You don't have permission to update this profile");
+        }
+        return user;
+    }
+
+    /**
+     * Legacy getCurrent() fixed to use mapToUserDTO(...)
+     */
+    public UserDTO getCurrent() {
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication().getName();
+        UsersEntity user = usersRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Current user not found"));
+        return mapToUserDTO(user);
+    }
+
+    private UserDTO mapToUserDTO(UsersEntity user) {
         UserDTO dto = new UserDTO();
-        dto.setId(u.getUserId());
-        dto.setEmail(u.getEmail());
-        dto.setName(u.getName());
-        dto.setPhone(u.getPhoneNumber());
-        dto.setAddress(u.getLocation());
-        dto.setAvatar(u.getAvatar());
-        dto.setBonus_points(u.getBonusPoints());
-        dto.setLoyaltyPoints(u.getBonusPoints());
-        dto.setCouponCode(u.getReferralCode() != null ? u.getReferralCode() : u.getPromoCode());
-        dto.setCreditsAvailable(u.getBonusPoints() != null ? u.getBonusPoints() * 0.05 : 0.0);
-        dto.setQrCodeValue(u.getPromoCode() != null ? u.getPromoCode() : u.getUserId().toString());
-        dto.setShoppingLists(Collections.emptyList());
+        dto.setId(user.getUserId());
+        dto.setEmail(user.getEmail());
+        dto.setName(user.getName());
+        dto.setPhone(user.getPhoneNumber());
+        dto.setAddress(user.getLocation());
+        dto.setAvatar(user.getAvatar());
+        dto.setBonus_points(user.getBonusPoints());
+        dto.setLoyaltyPoints(user.getBonusPoints());
+        dto.setCouponCode(user.getReferralCode() != null ? user.getReferralCode() : user.getPromoCode());
+        dto.setCreditsAvailable(user.getBonusPoints() != null ? user.getBonusPoints() * 0.05 : 0.0);
+        dto.setQrCodeValue(user.getPromoCode() != null ? user.getPromoCode() : user.getUserId().toString());
+        dto.setShoppingLists(List.of());
+        return dto;
+    }
+
+    private UserDTO mapToBasicUserDTO(UsersEntity user) {
+        UserDTO dto = new UserDTO();
+        dto.setId(user.getUserId());
+        dto.setEmail(user.getEmail());
+        dto.setName(user.getName());
+        dto.setAvatar(user.getAvatar());
+        dto.setShoppingLists(List.of());
         return dto;
     }
 }

@@ -49,6 +49,7 @@ public class SecurityConfig {
                 // 3) Authorize
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/login", "/auth/register").permitAll()
+                        .requestMatchers("/health").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/users/reviews", "/api/customers/reviews").permitAll()
                         .requestMatchers(HttpMethod.GET, "/uploads/**", "/assets/**").permitAll()
                         .requestMatchers("/user/**").authenticated()

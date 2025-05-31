@@ -25,7 +25,7 @@ spring:
       file-size-threshold: 1KB
 
 cors:
-  allowed-origins: ${FRONTEND_URL:http://localhost:4200,https://grocerymate.netlify.app/home}
+  allowed-origins: ${FRONTEND_URL:http://localhost:4200,https://grocerymate.netlify.app}
 
 jwt:
   secret: ${JWT_SECRET}

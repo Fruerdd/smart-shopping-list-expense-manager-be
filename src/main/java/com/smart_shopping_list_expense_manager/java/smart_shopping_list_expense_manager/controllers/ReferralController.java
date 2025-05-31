@@ -10,7 +10,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/referral")
-@CrossOrigin(origins = "http://localhost:4200")
 public class ReferralController {
 
     private final ReferralService referralService;

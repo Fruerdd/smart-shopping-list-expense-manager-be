@@ -11,7 +11,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/shopping-lists")
-@CrossOrigin(origins = "http://localhost:4200")
 public class ShoppingListController {
     private final ShoppingListService shoppingListService;
 

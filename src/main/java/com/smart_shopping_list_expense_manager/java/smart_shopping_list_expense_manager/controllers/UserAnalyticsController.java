@@ -20,7 +20,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/profile")
-@CrossOrigin(origins = "http://localhost:4200")
 public class UserAnalyticsController {
 
     private final UserProfileService userProfileService;

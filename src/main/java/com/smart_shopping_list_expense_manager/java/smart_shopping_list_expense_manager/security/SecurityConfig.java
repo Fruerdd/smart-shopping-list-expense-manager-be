@@ -28,7 +28,7 @@ public class SecurityConfig {
     private final JwtFilter jwtFilter;
     private final CustomUserDetailsService userDetailsService;
 
-    @Value("${cors.allowed-origins:http://localhost:4200}")
+    @Value("${FRONTEND_URL:http://localhost:4200,https://grocerymate.netlify.app}")
     private String allowedOrigins;
 
     public SecurityConfig(JwtFilter jwtFilter,
@@ -75,13 +75,13 @@ public class SecurityConfig {
         
         // Parse allowed origins from environment variable
         List<String> origins = Arrays.asList(allowedOrigins.split(","));
-        cfg.setAllowedOrigins(origins);
+        cfg.setAllowedOriginPatterns(origins);
         
-        cfg.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
-        cfg.setAllowedHeaders(List.of("*")); // Allow all headers
-        cfg.setExposedHeaders(List.of("Authorization", "Content-Type"));
+        cfg.setAllowedMethods(Arrays.asList("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
+        cfg.setAllowedHeaders(Arrays.asList("*"));
+        cfg.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
         cfg.setAllowCredentials(true);
-        cfg.setMaxAge(3600L); // Cache preflight response for 1 hour
+        cfg.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
         src.registerCorsConfiguration("/**", cfg);

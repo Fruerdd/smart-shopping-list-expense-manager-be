@@ -24,9 +24,6 @@ spring:
       max-request-size: 5MB
       file-size-threshold: 1KB
 
-cors:
-  allowed-origins: ${FRONTEND_URL:http://localhost:4200,https://grocerymate.netlify.app}
-
 jwt:
   secret: ${JWT_SECRET}
   expiration: 36000000

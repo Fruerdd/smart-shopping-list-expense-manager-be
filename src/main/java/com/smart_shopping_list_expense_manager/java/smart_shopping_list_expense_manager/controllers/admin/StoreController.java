@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/stores")
-@CrossOrigin(origins = "http://localhost:4200")
 public class StoreController {
 
     private final StoreRepository storeRepository;

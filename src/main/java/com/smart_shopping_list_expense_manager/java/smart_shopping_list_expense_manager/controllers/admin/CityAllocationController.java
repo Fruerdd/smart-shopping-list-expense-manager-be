@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/stats")
-@CrossOrigin("http://localhost:4200")
 public class CityAllocationController {
 
     private final CityAllocationService service;

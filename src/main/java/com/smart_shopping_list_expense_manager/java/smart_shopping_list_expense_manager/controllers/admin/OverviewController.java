@@ -9,7 +9,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/stats")
-@CrossOrigin("http://localhost:4200")
 public class OverviewController {
     private final OverviewService service;
     public OverviewController(OverviewService service) {

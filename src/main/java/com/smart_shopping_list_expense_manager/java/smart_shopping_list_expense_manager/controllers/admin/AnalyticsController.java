@@ -12,7 +12,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/products/analytics")
-@CrossOrigin("http://localhost:4200")
 public class AnalyticsController {
     private final AnalyticsService svc;
     public AnalyticsController(AnalyticsService svc) { this.svc = svc; }

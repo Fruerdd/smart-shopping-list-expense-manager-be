@@ -25,5 +25,5 @@ spring:
       file-size-threshold: 1KB
 
 jwt:
-  secret: Qm9Z8l@Jt4!rX2#ZxLw7*UqNpVe5$AbCdFgHiJkLmNoPqRsTuVwXyZ1234567890
+  secret: ${JWT_SECRET}
   expiration: 36000000 # 10 sati traje

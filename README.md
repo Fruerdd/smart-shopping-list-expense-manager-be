@@ -158,4 +158,49 @@ LoyaltyDto {
 - **Real-time Store Inventory:** Live stock updates not implemented initially.
 - **Mobile App Version:** Initially, the application is web-based.
 
+## Deployment Setup
+
+### Backend Deployment (Render)
+
+**Platform:** Render (render.com)  
+**Database:** PostgreSQL on Render  
+**Backend URL:** `https://smart-shopping-list-api.onrender.com`
+
+#### Setup Steps:
+1. **Create PostgreSQL Database** on Render (Free tier)
+2. **Create Web Service** connected to this GitHub repository
+3. **Environment Variables Required:**
+   ```
+   SPRING_PROFILES_ACTIVE=prod
+   DATABASE_URL=[Internal Database URL from Render]
+   POSTGRES_USER=[Database username from Render]
+   POSTGRES_PASSWORD=[Database password from Render] 
+   JWT_SECRET=[JWT token]
+   FRONTEND_URL=[https://grocerymate.netlify.app/home]
+   ```
+
+#### Deployment Configuration Files:
+- `system.properties` - Specifies Java 21
+- `Dockerfile` - Container configuration for deployment
+- `src/main/resources/application-prod.yml` - Production configuration
+- `src/main/java/.../config/CorsConfig.java` - CORS configuration for frontend connection
+
+### Frontend Deployment (Netlify)
+
+**Platform:** Netlify  
+**Frontend URL:** `https://grocerymate.netlify.app/home`
+
+#### Required Configuration:
+- Ensure CORS is configured to allow Netlify domain
+
+### Database Connection
+- PostgreSQL database hosted on Render
+- Backend connects via internal database URL (faster, free bandwidth)
+- Environment variables manage connection securely
+
+### Frontend-Backend Connection
+- CORS configured to allow Netlify domain
+- API calls from Angular frontend to Spring Boot backend
+- JWT authentication for secure communication
+
 

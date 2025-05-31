@@ -1,0 +1,40 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/shopping_db}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:password}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 5MB
+      max-request-size: 5MB
+      file-size-threshold: 1KB
+
+cors:
+  allowed-origins: ${FRONTEND_URL:http://localhost:4200,https://grocerymate.netlify.app/home}
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 36000000
+
+logging:
+  level:
+    com.smart_shopping_list_expense_manager: INFO
+    org.hibernate: WARN
+    org.springframework: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n" 

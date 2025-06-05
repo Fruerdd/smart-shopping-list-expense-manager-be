@@ -78,8 +78,6 @@ public class ProductService {
                 });
         product.setCategory(category);
 
-        product.setStore(store);
-
         productRepository.save(product);
         storePrice.setProduct(product);
 

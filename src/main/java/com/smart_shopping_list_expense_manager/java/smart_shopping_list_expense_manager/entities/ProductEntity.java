@@ -38,11 +38,6 @@ public class ProductEntity {
     private Instant createdAt;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_id", columnDefinition = "uuid", nullable = false)
-    @JsonIgnore
-    private StoreEntity store;
-
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", columnDefinition = "uuid", nullable = false)
     @JsonIgnore
     private CategoryEntity category;

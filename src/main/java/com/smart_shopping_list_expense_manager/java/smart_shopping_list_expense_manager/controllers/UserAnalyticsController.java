@@ -9,10 +9,8 @@ import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_
 
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.services.UserProfileService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 

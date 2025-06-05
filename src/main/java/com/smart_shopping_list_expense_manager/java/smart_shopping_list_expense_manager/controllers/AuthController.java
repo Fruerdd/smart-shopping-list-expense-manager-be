@@ -4,7 +4,6 @@ import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.services.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 @RestController
 @RequestMapping("/auth")

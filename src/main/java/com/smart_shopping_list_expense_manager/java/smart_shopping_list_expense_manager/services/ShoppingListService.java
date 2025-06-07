@@ -20,8 +20,6 @@ public class ShoppingListService {
     private final StoreRepository storeRepository;
     private final CategoryRepository categoryRepository;
     private final StorePriceRepository storePriceRepository;
-    private final ShoppingListItemRepository shoppingListItemRepository;
-    private final CollaboratorRepository collaboratorRepository;
     private final EntityManager entityManager;
     private final NotificationService notificationService;
 
@@ -31,8 +29,6 @@ public class ShoppingListService {
                                StoreRepository storeRepository,
                                CategoryRepository categoryRepository,
                                StorePriceRepository storePriceRepository,
-                               ShoppingListItemRepository shoppingListItemRepository,
-                               CollaboratorRepository collaboratorRepository,
                                EntityManager entityManager,
                                NotificationService notificationService) {
         this.shoppingListRepository = shoppingListRepository;
@@ -41,8 +37,6 @@ public class ShoppingListService {
         this.storeRepository = storeRepository;
         this.categoryRepository = categoryRepository;
         this.storePriceRepository = storePriceRepository;
-        this.shoppingListItemRepository = shoppingListItemRepository;
-        this.collaboratorRepository = collaboratorRepository;
         this.entityManager = entityManager;
         this.notificationService = notificationService;
     }
@@ -202,20 +196,6 @@ public class ShoppingListService {
             }
         }
     }
-
-//    public ShoppingListItemDTO updateShoppingListItem(UUID shoppingListId, UUID itemId, ShoppingListItemDTO itemDTO) {
-//        ShoppingListEntity shoppingList = shoppingListRepository.findById(shoppingListId)
-//                .orElseThrow(() -> new ResourceNotFoundException("Shopping list not found with id: " + shoppingListId));
-//        ShoppingListItemEntity item = shoppingList.getItems().stream()
-//                .filter(i -> i.getId().equals(itemId))
-//                .findFirst()
-//                .orElseThrow(() -> new ResourceNotFoundException("Item not found with id: " + itemId));
-//        item.setQuantity(itemDTO.getQuantity() != null ? BigDecimal.valueOf(itemDTO.getQuantity()) : item.getQuantity());
-//        item.setChecked(itemDTO.isChecked());
-//        item.setStatus(itemDTO.getStatus());
-//        shoppingListRepository.save(shoppingList);
-//        return convertToItemDTO(item, shoppingList.getStore().getName());
-//    }
 
     public void softDeleteShoppingList(UUID id) {
         ShoppingListEntity shoppingList = shoppingListRepository.findById(id)

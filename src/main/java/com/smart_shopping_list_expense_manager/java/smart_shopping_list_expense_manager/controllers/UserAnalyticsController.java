@@ -30,7 +30,6 @@ public class UserAnalyticsController {
     }
 
     private UUID currentUserId() {
-        // getCurrent() returns a UserDTO, which holds the UUID
         return userProfileService.getCurrent().getId();
     }
 

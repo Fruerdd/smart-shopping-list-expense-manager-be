@@ -1,5 +1,6 @@
 package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.exceptions;
 
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -21,6 +22,7 @@ public class GlobalExceptionHandler {
     }
 }
 
+@Getter
 class ErrorResponse {
     private final int status;
     private final String message;
@@ -30,11 +32,4 @@ class ErrorResponse {
         this.message = message;
     }
 
-    public int getStatus() {
-        return status;
-    }
-
-    public String getMessage() {
-        return message;
-    }
 }

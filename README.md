@@ -13,7 +13,7 @@ The **Smart Shopping List & Expense Manager** is a web application designed to h
 
 - **Backend:** Java, Spring  
 - **Frontend:** Angular  
-- **Database:** PostgreSQL / MySQL  
+- **Database:** PostgreSQL
 - **Hosting:** Netlify/Render  
 
 ## Team Members & Feature Assignment

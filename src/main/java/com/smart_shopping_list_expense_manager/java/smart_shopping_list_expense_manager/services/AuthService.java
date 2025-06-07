@@ -48,7 +48,7 @@ public class AuthService {
         user.setPhoneNumber("1234567890");
         user.setReferralCode(generateReferralCode());
         user.setPromoCode(generatePromoCode());
-        user.setAvatar("https://images.icon-icons.com/1378/PNG/512/avatardefault_92824.png");
+        user.setAvatar("https://i.imgur.com/QR07e3Q.png");
         user.setReviewScore(0.0);
         user.setReviewContext("No reviews yet");
         user.setLocation("Change this yourself");

@@ -207,9 +207,6 @@ public class UserProfileService {
         return user;
     }
 
-    /**
-     * Legacy getCurrent() fixed to use mapToUserDTO(...)
-     */
     public UserDTO getCurrent() {
         String email = SecurityContextHolder.getContext()
                 .getAuthentication().getName();

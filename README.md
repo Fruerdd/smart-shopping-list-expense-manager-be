@@ -14,7 +14,7 @@ The **Smart Shopping List & Expense Manager** is a web application designed to h
 - **Backend:** Java, Spring  
 - **Frontend:** Angular  
 - **Database:** PostgreSQL / MySQL  
-- **Hosting:** Netlify/Heroku  
+- **Hosting:** Netlify/Render  
 
 ## Team Members & Feature Assignment
 
@@ -35,7 +35,7 @@ The **Smart Shopping List & Expense Manager** is a web application designed to h
 
 ## Site Map
 
-![sitemao](https://github.com/Fruerdd/smart-shopping-list-expense-manager-issues/blob/main/sitemap.jpg)
+![sitemap](https://github.com/Fruerdd/smart-shopping-list-expense-manager-issues/blob/main/sitemap.jpg)
 
 
 ## Mockups
@@ -47,7 +47,7 @@ The **Smart Shopping List & Expense Manager** is a web application designed to h
 
 ## Data Source for Markets & Items
 
-Instead of markets being user-managed, the admin will maintain the market and product database. A CSV file (randomly generated using Mockaroo and/or other AI tools) will contain:
+Instead of markets being user-managed, the admin will maintain the market and product database. A CSV file (randomly generated using AI tools) will contain:
 
 - A list of grocery items
 - Prices of items across different markets
@@ -83,72 +83,484 @@ Users can:
 
 ### **API Endpoints**
 
-| #  | CRUD   | URL Path                 | Request         | Response         | Description                          |
-|----|--------|-------------------------|----------------|----------------|--------------------------------------|
-| I.a | Create | `/user/register`         | `UserDto`      | `UserDto`      | Registers a new user.                |
-| I.b | Create | `/user/login`            | `AuthDto`      | `AuthResponse` | Authenticates user and returns token.|
-| II.a | Create | `/shopping-list`        | `ShoppingListDto` | `ShoppingListDto` | Creates a new shopping list.       |
-| II.b | Read   | `/shopping-list/{id}`   | -              | `ShoppingListDto` | Retrieves a shopping list.       |
-| II.c | Update | `/shopping-list/{id}`   | `ShoppingListDto` | `ShoppingListDto` | Updates a shopping list.       |
-| II.d | Delete | `/shopping-list/{id}`   | -              | -              | Deletes a shopping list.       |
-| III.a | Read  | `/price-comparison`      | -              | `List`         | Returns price comparisons.          |
-| IV.a | Read   | `/expenses/{userId}`    | -              | `List`         | Retrieves user's expenses.          |
-| IV.b | Create | `/expense`              | `ExpenseDto`   | `ExpenseDto`   | Logs a new expense entry.           |
-| IV.c | Update | `/expense/{expenseId}`  | `ExpenseDto`   | `ExpenseDto`   | Updates an expense.                 |
-| IV.d | Delete | `/expense/{expenseId}`  | -              | -              | Deletes an expense.                 |
-| V.a | Create | `/referral/invite`       | `ReferralDto`  | `ReferralResponse` | Sends a referral invitation.      |
-| V.b | Read   | `/loyalty/points/{userId}` | -            | `LoyaltyDto`   | Retrieves user loyalty points.      |
+#### **Authentication Endpoints**
+| Method | URL Path         | Request       | Response       | Description                          |
+|--------|------------------|---------------|----------------|--------------------------------------|
+| POST   | `/auth/register` | `RegisterDTO` | `String`       | Registers a new user                 |
+| POST   | `/auth/login`    | `AuthDTO`     | `AuthResponse` | Authenticates user and returns token |
+
+#### **User Profile & Management Endpoints**
+| Method | URL Path                            | Request         | Response        | Description                    |
+|--------|-------------------------------------|-----------------|-----------------|--------------------------------|
+| GET    | `/user/profile/{id}`                | -               | `UserDTO`       | Gets user profile by ID        |
+| GET    | `/user/profile/me`                  | -               | `UserDTO`       | Gets current user profile      |
+| PUT    | `/user/profile/{id}`                | `UserDTO`       | `UserDTO`       | Updates user profile           |
+| PATCH  | `/user/profile/{id}`                | `UserDTO`       | `UserDTO`       | Partially updates user profile |
+| POST   | `/user/profile/upload-picture/{id}` | `MultipartFile` | `String`        | Uploads profile picture        |
+| GET    | `/user/search`                      | `?q=query`      | `List<UserDTO>` | Searches users                 |
+
+#### **Friends & Social Endpoints**
+| Method | URL Path                     | Request             | Response        | Description             |
+|--------|------------------------------|---------------------|-----------------|-------------------------|
+| GET    | `/user/friends/{id}`         | -                   | `List<UserDTO>` | Gets user's friends     |
+| POST   | `/user/friends/{id}/request` | `?friendId=uuid`    | `String`        | Sends friend request    |
+| POST   | `/user/friends/{id}/accept`  | `?requesterId=uuid` | `String`        | Accepts friend request  |
+| POST   | `/user/friends/{id}/decline` | `?requesterId=uuid` | `String`        | Declines friend request |
+| DELETE | `/user/friends/{id}/remove`  | `?friendId=uuid`    | `String`        | Removes friend          |
+
+#### **Loyalty & Referral Endpoints**
+| Method | URL Path                            | Request                         | Response  | Description              |
+|--------|-------------------------------------|---------------------------------|-----------|--------------------------|
+| GET    | `/user/profile/loyalty-points/{id}` | -                               | `Integer` | Gets user loyalty points |
+| PUT    | `/user/profile/loyalty-points/{id}` | `?points=number`                | `Integer` | Updates loyalty points   |
+| POST   | `/user/profile/award-points/{id}`   | `?activity=string&count=number` | `String`  | Awards loyalty points    |
+| POST   | `/user/profile/referral/{id}`       | `?referralCode=string`          | `String`  | Applies referral code    |
+| GET    | `/user/profile/referral-code/{id}`  | -                               | `String`  | Gets user referral code  |
+
+#### **Notifications Endpoints**
+| Method | URL Path                                    | Request | Response                | Description                     |
+|--------|---------------------------------------------|---------|-------------------------|---------------------------------|
+| GET    | `/user/notifications/{id}`                  | -       | `List<NotificationDTO>` | Gets user notifications         |
+| GET    | `/user/notifications/{id}/unread`           | -       | `List<NotificationDTO>` | Gets unread notifications       |
+| GET    | `/user/notifications/{id}/count`            | -       | `Long`                  | Gets unread notification count  |
+| PATCH  | `/user/notifications/{notificationId}/read` | -       | `String`                | Marks notification as read      |
+| PATCH  | `/user/notifications/{id}/read-all`         | -       | `String`                | Marks all notifications as read |
+
+#### **Shopping List Management Endpoints**
+| Method | URL Path                                 | Request           | Response                | Description                |
+|--------|------------------------------------------|-------------------|-------------------------|----------------------------|
+| POST   | `/api/shopping-lists`                    | `ShoppingListDTO` | `ShoppingListDTO`       | Creates shopping list      |
+| GET    | `/api/shopping-lists/{id}`               | -                 | `ShoppingListDTO`       | Gets shopping list by ID   |
+| GET    | `/api/shopping-lists/user/{userId}`      | -                 | `List<ShoppingListDTO>` | Gets user's shopping lists |
+| PUT    | `/api/shopping-lists/{id}`               | `ShoppingListDTO` | `ShoppingListDTO`       | Updates shopping list      |
+| PUT    | `/api/shopping-lists/{id}/soft-delete`   | -                 | `Void`                  | Soft deletes shopping list |
+| GET    | `/api/shopping-lists/{id}/collaborators` | -                 | `List<CollaboratorDTO>` | Gets list collaborators    |
+
+#### **Product & Store Search Endpoints**
+| Method | URL Path                                               | Request        | Response                    | Description                     |
+|--------|--------------------------------------------------------|----------------|-----------------------------|---------------------------------|
+| GET    | `/api/shopping-lists/products`                         | -              | `List<ShoppingListItemDTO>` | Gets all products               |
+| GET    | `/api/shopping-lists/products/search`                  | `?term=string` | `List<ShoppingListItemDTO>` | Searches products               |
+| GET    | `/api/shopping-lists/products/category/{categoryId}`   | -              | `List<ShoppingListItemDTO>` | Gets products by category       |
+| GET    | `/api/shopping-lists/categories`                       | -              | `List<CategoryDTO>`         | Gets all categories             |
+| GET    | `/api/shopping-lists/sidebar-categories`               | -              | `List<CategoryDTO>`         | Gets sidebar categories         |
+| GET    | `/api/shopping-lists/stores`                           | -              | `List<StoreDTO>`            | Gets all available stores       |
+| GET    | `/api/shopping-lists/items/{itemId}/price-comparisons` | -              | `List<StoreItemDTO>`        | Gets price comparisons for item |
+
+#### **User Dashboard Endpoints**
+| Method | URL Path                                        | Request | Response                   | Description                       |
+|--------|-------------------------------------------------|---------|----------------------------|-----------------------------------|
+| GET    | `/api/users/{id}`                               | -       | `UserDTO`                  | Gets user by ID                   |
+| GET    | `/api/users/{id}/favorite-products`             | -       | `List<FavoriteProductDTO>` | Gets user's favorite products     |
+| POST   | `/api/users/{id}/favorite-products/{productId}` | -       | `FavoriteProductDTO`       | Adds favorite product             |
+| DELETE | `/api/users/{id}/favorite-products/{productId}` | -       | `Void`                     | Removes favorite product          |
+| GET    | `/api/users/{id}/favorite-stores`               | -       | `List<FavoriteStoreDTO>`   | Gets user's favorite stores       |
+| POST   | `/api/users/{id}/favorite-stores/{storeId}`     | -       | `FavoriteStoreDTO`         | Adds favorite store               |
+| DELETE | `/api/users/{id}/favorite-stores/{storeId}`     | -       | `Void`                     | Removes favorite store            |
+| GET    | `/api/users/{id}/products/{productId}/prices`   | -       | `List<StorePriceDTO>`      | Gets product prices across stores |
+| GET    | `/api/users/loyalty/{userId}`                   | -       | `LoyaltyTierEnum`          | Gets user loyalty tier            |
+
+#### **User Analytics Endpoints**
+| Method | URL Path                         | Request | Response                 | Description                      |
+|--------|----------------------------------|---------|--------------------------|----------------------------------|
+| GET    | `/api/profile/money-spent`       | -       | `List<MoneySpentDTO>`    | Gets money spent analytics       |
+| GET    | `/api/profile/category-spending` | -       | `List<CategorySpendDTO>` | Gets category spending breakdown |
+| GET    | `/api/profile/price-averages`    | -       | `List<PriceAverageDTO>`  | Gets price averages              |
+| GET    | `/api/profile/store-expenses`    | -       | `List<StoreExpenseDTO>`  | Gets store expense breakdown     |
+| GET    | `/api/profile/savings`           | -       | `List<SavingDTO>`        | Gets savings analytics           |
+
+#### **Admin Store Management Endpoints**
+| Method | URL Path                         | Request                | Response                | Description             |
+|--------|----------------------------------|------------------------|-------------------------|-------------------------|
+| GET    | `/api/stores`                    | -                      | `List<StoreDTO>`        | Gets all stores         |
+| POST   | `/api/stores`                    | `StoreCreateUpdateDTO` | `StoreDTO`              | Creates new store       |
+| PUT    | `/api/stores/{storeId}`          | `StoreCreateUpdateDTO` | `StoreDTO`              | Updates store           |
+| GET    | `/api/stores/{storeId}`          | -                      | `StoreDTO`              | Gets store by ID        |
+| GET    | `/api/stores/{storeId}/products` | -                      | `List<StoreProductDTO>` | Gets products for store |
+| GET    | `/api/stores/popular`            | -                      | `List<PopularShopDTO>`  | Gets popular stores     |
+
+#### **Admin Product Management Endpoints**
+| Method | URL Path             | Request               | Response        | Description        |
+|--------|----------------------|-----------------------|-----------------|--------------------|
+| POST   | `/api/products/bulk` | `List<AddProductDTO>` | `BulkResultDTO` | Bulk adds products |
+
+#### **Admin Analytics Endpoints**
+| Method | URL Path                                  | Request | Response                     | Description                   |
+|--------|-------------------------------------------|---------|------------------------------|-------------------------------|
+| GET    | `/api/products/analytics/daily-searches`  | -       | `List<DailySearchDTO>`       | Gets daily search analytics   |
+| GET    | `/api/products/analytics/weekly-adds`     | -       | `List<DailySearchDTO>`       | Gets weekly product additions |
+| GET    | `/api/products/analytics/monthly-adds`    | -       | `List<MonthlyProductAddDTO>` | Gets monthly additions        |
+| GET    | `/api/products/analytics/weekly-searches` | -       | `List<DailySearchDTO>`       | Gets weekly search analytics  |
+| GET    | `/api/products/analytics/top`             | -       | `List<TopProductDTO>`        | Gets top products             |
+
+#### **Health Check Endpoint**
+| Method | URL Path  | Request | Response              | Description           |
+|--------|-----------|---------|-----------------------|-----------------------|
+| GET    | `/health` | -       | `Map<String, Object>` | Health check endpoint |
 
 ### **Data Transfer Objects (DTOs)**
 
+#### **Authentication DTOs**
+
+
+`RegisterDTO`:
 ```json
-UserDto {
-  "id": number,
-  "name": string,
-  "email": string,
-  "password": string
+{
+  "name": "string",
+  "email": "string",
+  "password": "string"
 }
 ```
+`AuthDTO`:
 ```json
-ShoppingListDto {
-  "id": number,
-  "userId": number,
-  "items": List<ShoppingItemDto>,
-  "storePreferences": ["Cheapest", "Favorite"]
+{
+  "email": "string",
+  "password": "string"
 }
 ```
+`AuthResponse`:
 ```json
-PriceDto {
-  "itemId": number,
-  "store": string,
-  "price": number,
-  "lastUpdated": string
+{
+  "token": "string",
+  "message": "string",
+  "userType": "string"
 }
 ```
+
+#### **User DTOs**
+`UserDTO`:
 ```json
-ExpenseDto {
-  "id": number,
-  "userId": number,
-  "amount": number,
-  "category": string,
-  "date": string,
-  "paymentMethod": string
+{
+  "id": "uuid",
+  "email": "string",
+  "name": "string",
+  "phone": "string",
+  "address": "string",
+  "avatar": "string",
+  "loyaltyTier": "BRONZE|SILVER|GOLD",
+  "bonus_points": "integer",
+  "loyaltyPoints": "integer",
+  "couponCode": "string",
+  "creditsAvailable": "double",
+  "qrCodeValue": "string",
+  "shoppingLists": "List<ShoppingListDTO>"
 }
 ```
+`UserStatisticsDTO`:
 ```json
-ReferralDto {
-  "id": number,
-  "referrerId": number,
-  "referredUserId": number,
-  "status": string,
-  "rewardEarned": number
+{
+  "totalShoppingLists": "integer",
+  "totalFriends": "integer",
+  "totalLoyaltyPoints": "integer",
+  "totalExpenses": "double"
 }
 ```
+
+#### **Shopping List DTOs**
+`ShoppingListDTO`:
 ```json
-LoyaltyDto {
-  "userId": number,
-  "points": number,
-  "tier": string
+{
+  "id": "uuid",
+  "name": "string",
+  "description": "string",
+  "listType": "string",
+  "isActive": "boolean",
+  "ownerId": "uuid",
+  "ownerName": "string",
+  "ownerAvatar": "string",
+  "storeId": "uuid",
+  "storeName": "string",
+  "image": "string",
+  "category": "string",
+  "createdAt": "instant",
+  "updatedAt": "instant",
+  "items": "List<ShoppingListItemDTO>",
+  "collaborators": "List<CollaboratorDTO>"
+}
+```
+`ShoppingListItemDTO`:
+```json
+{
+  "id": "uuid",
+  "productId": "uuid",
+  "productName": "string",
+  "image": "string",
+  "price": "double",
+  "storeName": "string",
+  "categoryId": "uuid",
+  "quantity": "double",
+  "isChecked": "boolean",
+  "status": "string"
+}
+```
+`CollaboratorDTO`:
+```json
+{
+  "userId": "uuid",
+  "userName": "string",
+  "permission": "VIEW|EDIT"
+}
+```
+
+#### **Product & Store DTOs**
+`ProductDTO`:
+```json
+{
+  "id": "uuid",
+  "name": "string",
+  "category": "CategoryEntity"
+}
+```
+`StoreDTO`:
+```json
+{
+  "id": "uuid",
+  "name": "string",
+  "icon": "string"
+}
+```
+`CategoryDTO`:
+```json
+{
+  "id": "uuid",
+  "name": "string",
+  "icon": "string",
+  "products": "List<ShoppingListItemDTO>"
+}
+```
+`StorePriceDTO`:
+```json
+{
+  "storeId": "uuid",
+  "storeName": "string",
+  "price": "BigDecimal"
+}
+```
+`StoreItemDTO`:
+```json
+{
+  "storeId": "uuid",
+  "storeName": "string",
+  "storeIcon": "string",
+  "price": "double"
+}
+```
+
+#### **Favorites DTOs**
+`FavoriteProductDTO`:
+```json
+{
+  "id": "uuid",
+  "productId": "uuid",
+  "productName": "string"
+}
+```
+`FavoriteStoreDTO`:
+```json
+{
+  "id": "uuid",
+  "storeId": "uuid",
+  "storeName": "string"
+}
+```
+
+#### **Notification DTO**
+`NotificationDTO`:
+```json
+{
+  "id": "uuid",
+  "sourceUserId": "uuid",
+  "sourceUserName": "string",
+  "sourceUserAvatar": "string",
+  "destinationUserId": "uuid",
+  "title": "string",
+  "message": "string",
+  "notificationType": "string",
+  "isRead": "boolean",
+  "createdAt": "instant"
+}
+```
+
+#### **Analytics DTOs**
+`MoneySpentDTO`:
+```json
+{
+  "month": "string",
+  "thisYear": "double",
+  "lastYear": "double"
+}
+```
+`CategorySpendDTO`:
+```json
+{
+  "category": "string",
+  "spent": "double"
+}
+```
+`PriceAverageDTO`:
+```json
+{
+  "product": "string",
+  "averagePrice": "double"
+}
+```
+`StoreExpenseDTO`:
+```json
+{
+  "store": "string",
+  "spent": "double"
+}
+```
+`SavingDTO`:
+```json
+{
+  "month": "string",
+  "saved": "double"
+}
+```
+
+#### **Admin DTOs**
+`StoreCreateUpdateDTO`:
+```json
+{
+  "name": "string",
+  "icon": "string",
+  "location": "string",
+  "contact": "string"
+}
+```
+`StoreProductDTO`:
+```json
+{
+  "storePriceId": "string",
+  "storeId": "string",
+  "productId": "string",
+  "productName": "string",
+  "category": "string",
+  "description": "string",
+  "isActive": "boolean",
+  "price": "double",
+  "barcode": "string"
+}
+```
+`AddProductDTO`:
+```json
+{
+  "storePriceId": "uuid",
+  "storeId": "uuid",
+  "productId": "uuid",
+  "productName": "string",
+  "category": "string",
+  "description": "string",
+  "isActive": "boolean",
+  "price": "BigDecimal",
+  "barcode": "string"
+}
+```
+`BulkResultDTO`:
+```json
+{
+  "success": "boolean",
+  "errors": "List<string>",
+  "count": "integer"
+}
+```
+`PopularShopDTO`:
+```json
+{
+  "storeId": "uuid",
+  "storeName": "string",
+  "usageCount": "long"
+}
+```
+`DailySearchDTO`:
+```json
+{
+  "date": "string",
+  "searches": "long"
+}
+```
+`MonthlyProductAddDTO`:
+```json
+{
+  "month": "string",
+  "products": "long"
+}
+```
+`TopProductDTO`:
+```json
+{
+  "productName": "string",
+  "usageCount": "long"
+}
+```
+
+## Local Development Setup
+
+### Prerequisites
+- **Java 21** or higher
+- **PostgreSQL 12+** 
+- **Maven 3.6+**
+- **Git**
+
+### Environment Variables
+Create a `.env` file or set the following environment variables:
+```bash
+# Database Configuration
+POSTGRES_PASSWORD=your_database_password
+JWT_SECRET=your_jwt_secret_key_here
+```
+
+### Setup Steps
+1. **Clone the Repository**
+   ```bash
+   git clone <repository-url>
+   cd smart-shopping-list-expense-manager-be
+   ```
+
+2. **Setup PostgreSQL Database (Locally)**
+   ```bash
+   # Create database
+   createdb shopping_db
+   
+   # Or using psql
+   psql -U postgres
+   CREATE DATABASE shopping_db;
+   ```
+
+3. **Configure Environment Variables**
+   - Set `POSTGRES_PASSWORD` to your PostgreSQL password
+   - Set `JWT_SECRET` to a secure random string
+
+4. **Run the Application**
+   ```bash
+   # Using Maven
+   mvn spring-boot:run
+   
+   # Or compile and run
+   mvn clean package
+   java -jar target/smart-shopping-list-expense-manager-*.jar
+   ```
+
+5. **Verify Setup**
+   - Application runs on `http://localhost:8080`
+   - Health check: `GET http://localhost:8080/health`
+   - Database tables are auto-created on first run
+
+### Authentication
+- **JWT Token Required** for most endpoints
+- Include in Authorization header: `Bearer <your_jwt_token>`
+- Get token via `/auth/login` endpoint
+- Token expires after 10 hours
+
+### Error Response Format
+```json
+{
+  "timestamp": "2025-01-01T12:00:00Z",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Validation failed",
+  "path": "/api/endpoint"
 }
 ```
 
@@ -176,7 +588,7 @@ LoyaltyDto {
    POSTGRES_USER=[Database username from Render]
    POSTGRES_PASSWORD=[Database password from Render] 
    JWT_SECRET=[JWT token]
-   FRONTEND_URL=[https://grocerymate.netlify.app/home]
+   FRONTEND_URL=[https://grocerymate.netlify.app]
    ```
 
 #### Deployment Configuration Files:
@@ -188,7 +600,7 @@ LoyaltyDto {
 ### Frontend Deployment (Netlify)
 
 **Platform:** Netlify  
-**Frontend URL:** `https://grocerymate.netlify.app/home`
+**Frontend URL:** `https://grocerymate.netlify.app`
 
 #### Required Configuration:
 - Ensure CORS is configured to allow Netlify domain

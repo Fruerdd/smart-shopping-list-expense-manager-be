@@ -91,7 +91,7 @@ public class NotificationService {
         notification.setNotificationType(FRIEND_REQUEST);
         notification.setIsRead(false);
 
-        notification = notificationsRepository.save(notification);
+        notificationsRepository.save(notification);
     }
 
     public void createCollaboratorAddedNotification(UsersEntity listOwner, UsersEntity collaborator, String listName) {
@@ -103,7 +103,7 @@ public class NotificationService {
         notification.setNotificationType(COLLABORATOR_ADDED);
         notification.setIsRead(false);
 
-        notification = notificationsRepository.save(notification);
+        notificationsRepository.save(notification);
     }
 
     public void createReferralRewardNotification(UsersEntity user, int pointsEarned, String referredUserName) {
@@ -115,7 +115,7 @@ public class NotificationService {
         notification.setNotificationType(REFERRAL_REWARD);
         notification.setIsRead(false);
 
-        notification = notificationsRepository.save(notification);
+        notificationsRepository.save(notification);
     }
 
     public void createSystemNotification(UsersEntity user, String title, String message) {
@@ -127,7 +127,7 @@ public class NotificationService {
         notification.setNotificationType(SYSTEM_MESSAGE);
         notification.setIsRead(false);
 
-        notification = notificationsRepository.save(notification);
+        notificationsRepository.save(notification);
     }
 
     private UsersEntity validateUserAccess(UUID userId) {

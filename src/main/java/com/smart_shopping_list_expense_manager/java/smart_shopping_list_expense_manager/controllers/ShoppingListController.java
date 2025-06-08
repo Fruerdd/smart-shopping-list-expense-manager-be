@@ -1,11 +1,20 @@
 package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.controllers;
 
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.*;
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.user.ProductSearchLogDTO;
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities.UsersEntity;
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.repositories.UsersRepository;
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.services.ProductSearchLogService;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.services.ShoppingListService;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 
@@ -13,9 +22,17 @@ import java.util.UUID;
 @RequestMapping("/api/shopping-lists")
 public class ShoppingListController {
     private final ShoppingListService shoppingListService;
+    private final ProductSearchLogService productSearchLogService;
+    private UsersRepository usersRepo;
 
-    public ShoppingListController(ShoppingListService shoppingListService) {
-        this.shoppingListService = shoppingListService;
+    public ShoppingListController(
+            ShoppingListService shoppingListService,
+            ProductSearchLogService productSearchLogService,
+            UsersRepository         usersRepo
+    ) {
+        this.shoppingListService     = shoppingListService;
+        this.productSearchLogService = productSearchLogService;
+        this.usersRepo               = usersRepo;
     }
 
     @PostMapping
@@ -83,4 +100,19 @@ public class ShoppingListController {
     public ResponseEntity<List<StoreDTO>> getAllAvailableStores() {
         return ResponseEntity.ok(shoppingListService.getAllAvailableStores());
     }
+
+    @PostMapping("/search-logs")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void logProductSearch(
+            Authentication authentication,
+            @RequestBody ProductSearchLogDTO dto
+    ) {
+        String email = authentication.getName();
+
+        UsersEntity user = usersRepo.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + email));
+
+        productSearchLogService.recordSearch(user.getUserId(), dto);
+    }
+
 }

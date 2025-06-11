@@ -1,11 +1,9 @@
 package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.controllers;
-
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.CustomerDTO;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.ReviewDTO;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities.UsersEntity;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.repositories.UsersRepository;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.stream.Collectors;
 

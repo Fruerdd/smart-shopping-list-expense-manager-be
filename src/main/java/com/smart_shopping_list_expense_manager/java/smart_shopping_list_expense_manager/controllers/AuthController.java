@@ -1,5 +1,4 @@
 package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.controllers;
-
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.*;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.services.*;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +14,6 @@ public class AuthController {
         this.authService = authService;
     }
 
-    // Authentication endpoints
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterDTO registerDto) {
         String result = authService.register(registerDto);

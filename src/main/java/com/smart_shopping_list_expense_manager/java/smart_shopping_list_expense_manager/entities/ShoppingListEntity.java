@@ -1,4 +1,3 @@
-// ShoppingListEntity.java
 package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.entities;
 
 import jakarta.persistence.*;

@@ -40,13 +40,10 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // 1) Enable CORS using the new Customizer style
                 .cors(Customizer.withDefaults())
 
-                // 2) Disable CSRF
                 .csrf(CsrfConfigurer::disable)
 
-                // 3) Authorize
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/login", "/auth/register").permitAll()
                         .requestMatchers("/health").permitAll()
@@ -56,24 +53,20 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
 
-                // 4) Stateless sessions
                 .sessionManagement(sess ->
                         sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // 5) Plug in your auth provider & JWT filter
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // 6) CORS configuration with environment variable support
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
         
-        // Parse allowed origins from environment variable
         List<String> origins = Arrays.asList(allowedOrigins.split(","));
         cfg.setAllowedOriginPatterns(origins);
         

@@ -14,12 +14,10 @@ public interface FriendsRepository extends JpaRepository<FriendsEntity, UUID> {
      List<FriendsEntity> findByUser(UsersEntity user);
      List<FriendsEntity> findByFriend(UsersEntity friend);
      
-     // Check if friendship exists in either direction
      @Query("SELECT f FROM FriendsEntity f WHERE " +
             "(f.user = :user AND f.friend = :friend) OR " +
             "(f.user = :friend AND f.friend = :user)")
      Optional<FriendsEntity> findFriendshipBetweenUsers(@Param("user") UsersEntity user, @Param("friend") UsersEntity friend);
      
-     // Find specific friendship for deletion
      Optional<FriendsEntity> findByUserAndFriend(UsersEntity user, UsersEntity friend);
 }

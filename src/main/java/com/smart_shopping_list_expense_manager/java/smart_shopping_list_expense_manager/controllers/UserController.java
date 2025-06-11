@@ -1,5 +1,4 @@
 package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.controllers;
-
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.*;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.services.*;
 import org.springframework.http.HttpStatus;
@@ -7,7 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -33,7 +31,6 @@ public class UserController {
         this.notificationService = notificationService;
     }
 
-    // Profile management endpoints
     @GetMapping("/profile/{id}")
     public ResponseEntity<UserDTO> getUserProfile(@PathVariable String id) {
         UUID uuid = parseUUID(id);
@@ -57,7 +54,6 @@ public class UserController {
         return ResponseEntity.ok(userProfileService.patchUserProfile(uuid, userDTO));
     }
 
-    // Friends endpoints
     @GetMapping("/friends/{id}")
     public ResponseEntity<List<UserDTO>> getUserFriends(@PathVariable String id) {
         UUID uuid = parseUUID(id);
@@ -92,14 +88,12 @@ public class UserController {
         return ResponseEntity.ok(userProfileService.removeFriend(uuid, friendUuid));
     }
 
-    // Statistics endpoints
     @GetMapping("/statistics/{id}")
     public ResponseEntity<UserStatisticsDTO> getUserStatistics(@PathVariable String id) {
         UUID uuid = parseUUID(id);
         return ResponseEntity.ok(userProfileService.getUserStatistics(uuid));
     }
 
-    // Loyalty points endpoints
     @GetMapping("/profile/loyalty-points/{id}")
     public ResponseEntity<Integer> getLoyaltyPoints(@PathVariable String id) {
         UUID uuid = parseUUID(id);
@@ -120,7 +114,6 @@ public class UserController {
         return ResponseEntity.ok(loyaltyPointsService.awardLoyaltyPoints(uuid, activity, count));
     }
 
-    // Referral endpoints
     @PostMapping("/profile/referral/{id}")
     public ResponseEntity<String> applyReferralCode(@PathVariable String id, @RequestParam String referralCode) {
         UUID uuid = parseUUID(id);
@@ -133,7 +126,6 @@ public class UserController {
         return ResponseEntity.ok(loyaltyPointsService.getUserReferralCode(uuid));
     }
 
-    // Review endpoints
     @GetMapping("/profile/reviews/{id}")
     public ResponseEntity<ReviewDTO> getUserReviews(@PathVariable String id) {
         UUID uuid = parseUUID(id);
@@ -146,14 +138,12 @@ public class UserController {
         return ResponseEntity.ok(userReviewService.createUserReview(uuid, reviewDTO));
     }
 
-    // File upload endpoints
     @PostMapping("/profile/upload-picture/{id}")
     public ResponseEntity<String> uploadProfilePicture(@PathVariable String id, @RequestParam("file") MultipartFile file) {
         UUID uuid = parseUUID(id);
         return ResponseEntity.ok(fileUploadService.uploadProfilePicture(uuid, file));
     }
 
-    // Search endpoints
     @GetMapping("/search")
     public ResponseEntity<List<UserDTO>> searchUsers(@RequestParam String q) {
         return ResponseEntity.ok(userProfileService.searchUsers(q));

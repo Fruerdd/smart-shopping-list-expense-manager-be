@@ -1,11 +1,9 @@
 package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.controllers;
-
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.*;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.enums.LoyaltyTierEnum;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.services.UserDashboardService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -80,7 +78,6 @@ public class UserDashboardController {
         return ResponseEntity.ok(userService.getProductPrices(id, productId));
     }
 
-    // Shopping List Endpoints
     @GetMapping("/{id}/shopping-lists")
     public ResponseEntity<List<ShoppingListDTO>> getAllShoppingLists(@PathVariable UUID id) {
         return ResponseEntity.ok(userService.getAllShoppingLists(id));

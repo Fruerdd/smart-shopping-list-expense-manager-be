@@ -33,7 +33,6 @@ public class JwtFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         String path = request.getServletPath();
-        // 1) Bypass login/register entirely:
         if ("/user/login".equals(path) || "/user/register".equals(path)) {
             filterChain.doFilter(request, response);
             return;
@@ -43,17 +42,14 @@ public class JwtFilter extends OncePerRequestFilter {
         String token      = null;
         String username   = null;
 
-        // 2) Safely extract username from token:
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
             try {
                 username = jwtUtil.extractUsername(token);
             } catch (JwtException ex) {
-                // invalid/expired/signature‐failed → ignore token
             }
         }
 
-        // 3) If we got a username and no authentication yet, validate & set it
         if (username != null
                 && SecurityContextHolder.getContext().getAuthentication() == null) {
 
@@ -73,7 +69,6 @@ public class JwtFilter extends OncePerRequestFilter {
             }
         }
 
-        // Continue down the filter chain
         filterChain.doFilter(request, response);
     }
 }

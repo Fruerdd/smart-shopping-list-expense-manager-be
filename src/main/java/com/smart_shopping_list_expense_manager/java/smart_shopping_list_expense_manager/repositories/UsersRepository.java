@@ -24,16 +24,13 @@ public interface UsersRepository extends JpaRepository<UsersEntity, UUID> {
 
     List<UsersEntity> findByReviewScoreIsNotNullAndReviewContextIsNotNull();
 
-    /** For City Allocation chart */
     @Query("SELECT u.location, COUNT(u) FROM UsersEntity u GROUP BY u.location")
     List<Object[]> countByCity();
 
-    /** Count newly created users between two instants */
     @Query("SELECT COUNT(u) FROM UsersEntity u WHERE u.createdAt >= :start AND u.createdAt < :end")
     long countNewUsersBetween(@Param("start") Instant start,
                               @Param("end")   Instant end);
 
-    /** Count users still active as of the given instant */
     @Query("SELECT COUNT(u) FROM UsersEntity u WHERE u.createdAt < :asOf AND u.isActive = true")
     long countActiveUsersAt(@Param("asOf") Instant asOf);
 

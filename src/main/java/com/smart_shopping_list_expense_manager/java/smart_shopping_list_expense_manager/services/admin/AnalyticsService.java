@@ -83,8 +83,8 @@ public class AnalyticsService {
         return searchLogRepo.countSearchesLast7Days()
                 .stream()
                 .map(arr -> new DailySearchDTO(
-                        arr[0].toString(),                         // "YYYY-MM-DD"
-                        ((Number) arr[1]).longValue()              // count
+                        arr[0].toString(),
+                        ((Number) arr[1]).longValue()
                 ))
                 .collect(Collectors.toList());
     }
@@ -104,10 +104,6 @@ public class AnalyticsService {
         }
         return list;
     }
-
-    /**
-     * @return list of (store name, total appearances in shopping_list)
-     */
     public List<PopularShopDTO> getPopularStores() {
         @SuppressWarnings("unchecked")
         List<Object[]> rows = em.createNativeQuery(

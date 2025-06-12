@@ -15,7 +15,6 @@ public class AuthController {
         this.authService = authService;
     }
 
-    // Authentication endpoints
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterDTO registerDto) {
         String result = authService.register(registerDto);

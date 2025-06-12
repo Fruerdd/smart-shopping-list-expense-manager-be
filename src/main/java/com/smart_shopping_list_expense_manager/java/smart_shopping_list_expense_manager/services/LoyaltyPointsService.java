@@ -51,7 +51,6 @@ public class LoyaltyPointsService {
     public String applyReferralCode(UUID userId, String referralCode) {
         UsersEntity user = validateUserAccess(userId);
 
-        // Check if user has already used a referral code
         if (referralRepository.findByReferredUserUserId(user.getUserId()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You have already used a referral code");
         }
@@ -60,7 +59,6 @@ public class LoyaltyPointsService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Referral code cannot be empty");
         }
 
-        // Find the referrer by their referral code
         UsersEntity referrer = usersRepository.findByReferralCode(referralCode)
                 .orElse(usersRepository.findByPromoCode(referralCode).orElse(null));
 
@@ -68,12 +66,10 @@ public class LoyaltyPointsService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid referral code");
         }
 
-        // Check if user is trying to use their own referral code
         if (referrer.getUserId().equals(user.getUserId())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You cannot use your own referral code");
         }
 
-        // Create referral record
         ReferralEntity referral = new ReferralEntity();
         referral.setReferrer(referrer);
         referral.setReferredUser(user);
@@ -81,17 +77,14 @@ public class LoyaltyPointsService {
         referral.setRewardEarned(100);
         referralRepository.save(referral);
 
-        // Award points to referrer
         int referrerPoints = referrer.getBonusPoints() != null ? referrer.getBonusPoints() : 0;
         referrer.setBonusPoints(referrerPoints + 100);
         usersRepository.save(referrer);
 
-        // Award smaller bonus to new user
         int userPoints = user.getBonusPoints() != null ? user.getBonusPoints() : 0;
         user.setBonusPoints(userPoints + 25);
         usersRepository.save(user);
 
-        // Create notifications for both users
         notificationService.createReferralRewardNotification(referrer, 100, user.getName());
         notificationService.createSystemNotification(user, "Welcome Bonus!", 
             "Welcome! You earned 25 bonus points for using a referral code.");

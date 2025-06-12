@@ -29,9 +29,6 @@ public class AuthService {
         this.jwtUtil         = jwtUtil;
     }
 
-    /**
-     * Registers a new user by hashing their password.
-     */
     public String register(RegisterDTO dto) {
         if (usersRepository.existsByEmail(dto.getEmail())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already registered");
@@ -71,9 +68,6 @@ public class AuthService {
         return "PROMO" + randomNumberString.toUpperCase();
     }
 
-    /**
-     * Logs in an existing user by validating credentials manually.
-     */
     public AuthResponse login(AuthDTO authDTO) {
         UsersEntity user = usersRepository.findByEmail(authDTO.getEmail())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password"));
@@ -86,7 +80,7 @@ public class AuthService {
         return new AuthResponse(
                 token,
                 "Login successful",
-                user.getUserType()     // ← must match the DTO's `userType` field
+                user.getUserType()
         );
     }
 }

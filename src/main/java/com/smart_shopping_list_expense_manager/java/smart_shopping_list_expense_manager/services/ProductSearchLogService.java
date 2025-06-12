@@ -30,18 +30,15 @@ public class ProductSearchLogService {
     }
 
     public void recordSearch(UUID userId, ProductSearchLogDTO dto) {
-        // load associated entities
         ProductEntity product = productRepo.findById(dto.getProductId())
                 .orElseThrow(() -> new EntityNotFoundException("Product not found: " + dto.getProductId()));
         UsersEntity user = usersRepo.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found: " + userId));
 
-        // build and save your existing ProductSearchLogEntity
         ProductSearchLogEntity log = new ProductSearchLogEntity();
         log.setProduct(product);
         log.setUser(user);
         log.setSearchTerm(dto.getSearchTerm());
-        // createdAt is auto‐set by @PrePersist
 
         logRepo.save(log);
     }

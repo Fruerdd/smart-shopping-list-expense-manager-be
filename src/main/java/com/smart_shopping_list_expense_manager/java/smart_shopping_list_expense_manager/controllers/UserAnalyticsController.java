@@ -33,7 +33,6 @@ public class UserAnalyticsController {
         return userProfileService.getCurrent().getId();
     }
 
-    // 1) total spent per month
     @GetMapping("/money-spent")
     public ResponseEntity<List<MoneySpentDTO>> moneySpent() {
         UUID userId = currentUserId();
@@ -42,7 +41,6 @@ public class UserAnalyticsController {
         );
     }
 
-    // 2) % spent by category
     @GetMapping("/category-spending")
     public ResponseEntity<List<CategorySpendDTO>> categorySpending() {
         UUID userId = currentUserId();
@@ -51,7 +49,6 @@ public class UserAnalyticsController {
         );
     }
 
-    // 3) average price per item
     @GetMapping("/price-averages")
     public ResponseEntity<List<PriceAverageDTO>> priceAverages() {
         UUID userId = currentUserId();
@@ -60,7 +57,6 @@ public class UserAnalyticsController {
         );
     }
 
-    // 4) % spent by store
     @GetMapping("/store-expenses")
     public ResponseEntity<List<StoreExpenseDTO>> storeExpenses() {
         UUID userId = currentUserId();
@@ -69,7 +65,6 @@ public class UserAnalyticsController {
         );
     }
 
-    // 5) savings per month
     @GetMapping("/savings")
     public ResponseEntity<List<SavingDTO>> savings() {
         UUID userId = currentUserId();

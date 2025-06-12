@@ -92,14 +92,12 @@ public class UserController {
         return ResponseEntity.ok(userProfileService.removeFriend(uuid, friendUuid));
     }
 
-    // Statistics endpoints
     @GetMapping("/statistics/{id}")
     public ResponseEntity<UserStatisticsDTO> getUserStatistics(@PathVariable String id) {
         UUID uuid = parseUUID(id);
         return ResponseEntity.ok(userProfileService.getUserStatistics(uuid));
     }
 
-    // Loyalty points endpoints
     @GetMapping("/profile/loyalty-points/{id}")
     public ResponseEntity<Integer> getLoyaltyPoints(@PathVariable String id) {
         UUID uuid = parseUUID(id);
@@ -120,7 +118,6 @@ public class UserController {
         return ResponseEntity.ok(loyaltyPointsService.awardLoyaltyPoints(uuid, activity, count));
     }
 
-    // Referral endpoints
     @PostMapping("/profile/referral/{id}")
     public ResponseEntity<String> applyReferralCode(@PathVariable String id, @RequestParam String referralCode) {
         UUID uuid = parseUUID(id);
@@ -133,7 +130,6 @@ public class UserController {
         return ResponseEntity.ok(loyaltyPointsService.getUserReferralCode(uuid));
     }
 
-    // Review endpoints
     @GetMapping("/profile/reviews/{id}")
     public ResponseEntity<ReviewDTO> getUserReviews(@PathVariable String id) {
         UUID uuid = parseUUID(id);
@@ -146,14 +142,12 @@ public class UserController {
         return ResponseEntity.ok(userReviewService.createUserReview(uuid, reviewDTO));
     }
 
-    // File upload endpoints
     @PostMapping("/profile/upload-picture/{id}")
     public ResponseEntity<String> uploadProfilePicture(@PathVariable String id, @RequestParam("file") MultipartFile file) {
         UUID uuid = parseUUID(id);
         return ResponseEntity.ok(fileUploadService.uploadProfilePicture(uuid, file));
     }
 
-    // Search endpoints
     @GetMapping("/search")
     public ResponseEntity<List<UserDTO>> searchUsers(@RequestParam String q) {
         return ResponseEntity.ok(userProfileService.searchUsers(q));

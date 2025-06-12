@@ -45,7 +45,6 @@ public class EditUsersService {
         e.setName(dto.getName());
         e.setEmail(dto.getEmail());
 
-        // only update / hash the password if one was provided
         if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
             String hashed = passwordEncoder.encode(dto.getPassword());
             e.setPassword(hashed);

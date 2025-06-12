@@ -22,33 +22,31 @@ public class ProductController {
     }
 
     @PostMapping("/bulk")
-    public ResponseEntity<?> addMultipleProducts(
-            @RequestBody @Valid List<AddProductDTO> dtoList,
+    public ResponseEntity<BulkResultDTO> addMultipleProducts(
+            @Valid @RequestBody List<AddProductDTO> dtoList,
             BindingResult bindingResult
     ) {
         if (bindingResult.hasErrors()) {
-            // collect all error messages into a JSON-friendly list
-            List<String> errors = bindingResult.getAllErrors()
-                    .stream()
-                    .map(e -> e.getDefaultMessage())
+            List<String> validationErrors = bindingResult.getFieldErrors().stream()
+                    .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
                     .collect(Collectors.toList());
-            return ResponseEntity
-                    .badRequest()
-                    .body(new BulkResultDTO(false, errors, 0));
+            BulkResultDTO result = new BulkResultDTO(false, validationErrors, 0);
+            return ResponseEntity.badRequest().body(result);
         }
 
         try {
-            int count = productService.addProducts(dtoList).size();
-            return ResponseEntity.ok(new BulkResultDTO(true, null, count));
+            BulkResultDTO result = productService.addProducts(dtoList);
+
+            HttpStatus status = result.isSuccess() ? HttpStatus.OK : HttpStatus.MULTI_STATUS;
+            return new ResponseEntity<>(result, status);
         } catch (Exception ex) {
-            // log the exception on the server
             ex.printStackTrace();
-            // return a JSON error
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new BulkResultDTO(false,
-                            List.of("Update failed: " + ex.getMessage()),
-                            0));
+            BulkResultDTO errorResult = new BulkResultDTO(
+                    false,
+                    List.of("Internal error: " + ex.getMessage()),
+                    0
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResult);
         }
     }
 }

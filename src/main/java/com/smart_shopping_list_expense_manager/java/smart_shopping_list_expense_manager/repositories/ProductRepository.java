@@ -5,15 +5,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface ProductRepository extends JpaRepository<ProductEntity, UUID> {
     List<ProductEntity> findByNameContainingIgnoreCase(String name);
-
-
-    /**
-     * Returns List of Object[]{ date (LocalDate), count } for products created in last 7 days.
-     */
+    Optional<ProductEntity> findByName(String name);
     @Query(value =
             "SELECT DATE(p.created_at) AS day, COUNT(*) AS cnt " +
                     "FROM products p " +

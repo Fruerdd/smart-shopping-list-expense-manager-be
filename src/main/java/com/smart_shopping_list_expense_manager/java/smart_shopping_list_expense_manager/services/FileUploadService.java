@@ -31,14 +31,14 @@ public class FileUploadService {
         validateFile(file);
 
         try {
-            // Create uploads directory if it doesn't exist
+
             String uploadDir = "uploads/profile-images";
             Path uploadPath = Paths.get(uploadDir).toAbsolutePath();
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
 
-            // Generate unique filename
+
             String originalFilename = file.getOriginalFilename();
             String fileExtension = "";
             if (originalFilename != null && originalFilename.contains(".")) {
@@ -46,11 +46,9 @@ public class FileUploadService {
             }
             String fileName = "profile_" + userId + "_" + System.currentTimeMillis() + fileExtension;
 
-            // Save file
             Path filePath = uploadPath.resolve(fileName);
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-            // Update user avatar path in database (use relative path for web access)
             String avatarPath = "/uploads/profile-images/" + fileName;
             user.setAvatar(avatarPath);
             usersRepository.save(user);
@@ -63,18 +61,15 @@ public class FileUploadService {
     }
 
     private void validateFile(MultipartFile file) {
-        // Validate file
         if (file.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File is empty");
         }
 
-        // Validate file type
         String contentType = file.getContentType();
         if (contentType == null || !contentType.startsWith("image/")) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File must be an image");
         }
 
-        // Validate file size (5MB limit)
         if (file.getSize() > 5 * 1024 * 1024) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File size must be less than 5MB");
         }

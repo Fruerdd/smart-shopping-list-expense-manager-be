@@ -21,7 +21,6 @@ public class NotificationService {
     private final NotificationsRepository notificationsRepository;
     private final UsersRepository usersRepository;
 
-    // Notification types constants
     public static final String FRIEND_REQUEST = "FRIEND_REQUEST";
     public static final String COLLABORATOR_ADDED = "COLLABORATOR_ADDED";
     public static final String REFERRAL_REWARD = "REFERRAL_REWARD";
@@ -58,7 +57,6 @@ public class NotificationService {
         NotificationsEntity notification = notificationsRepository.findById(notificationId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Notification not found"));
 
-        // Validate user can mark this notification as read
         validateUserAccess(notification.getDestination().getUserId());
 
         notification.setIsRead(true);
@@ -76,7 +74,6 @@ public class NotificationService {
         return String.format("Marked %d notifications as read (excluding friend requests that require explicit response)", updatedCount);
     }
 
-    // Create notifications for different scenarios
     public void createFriendRequestNotification(UsersEntity sender, UsersEntity receiver) {
         if (notificationsRepository.findByDestinationAndSourceAndNotificationTypeAndIsReadFalse(
                 receiver, sender, FRIEND_REQUEST).isPresent()) {

@@ -17,13 +17,11 @@ public class EditUsersController {
         this.svc = svc;
     }
 
-    /** GET /api/users → all users */
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAll() {
         return ResponseEntity.ok(svc.getAllUsers());
     }
 
-    /** POST /api/users/bulk → create (or upsert) multiple users */
     @PostMapping("/bulk")
     public ResponseEntity<List<UserDTO>> bulkCreate(
             @RequestBody @Valid List<UserDTO> usersDto,
@@ -35,10 +33,9 @@ public class EditUsersController {
         return ResponseEntity.ok(svc.editMultipleUsers(usersDto));
     }
 
-    /** PUT /api/users/bulk → bulk update */
     @PutMapping("/bulk")
     public ResponseEntity<List<UserDTO>> bulkUpdate(
-            @RequestBody List<UserDTO> usersDto    // <-- removed @Valid and BindingResult
+            @RequestBody List<UserDTO> usersDto
     ) {
         return ResponseEntity.ok(svc.editMultipleUsers(usersDto));
     }

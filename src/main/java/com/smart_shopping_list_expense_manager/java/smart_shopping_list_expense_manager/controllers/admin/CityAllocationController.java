@@ -15,9 +15,6 @@ public class CityAllocationController {
         this.service = service;
     }
 
-    /**
-     * Matches Angular’s GET http://localhost:8080/api/stats/city-allocation
-     */
     @GetMapping("/city-allocation")
     public ResponseEntity<CityAllocationDTO> getCityAllocation() {
         CityAllocationDTO dto = service.getCityAllocation();

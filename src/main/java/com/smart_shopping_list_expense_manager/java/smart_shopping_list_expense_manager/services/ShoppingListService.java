@@ -60,7 +60,6 @@ public class ShoppingListService {
         shoppingList.setOwner(owner);
         shoppingList.setStore(store);
 
-        // Handle items
         List<ShoppingListItemEntity> items = shoppingListDTO.getItems().stream().map(itemDTO -> {
             ProductEntity product = productRepository.findById(itemDTO.getProductId())
                     .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + itemDTO.getProductId()));
@@ -74,7 +73,6 @@ public class ShoppingListService {
         }).collect(Collectors.toList());
         shoppingList.setItems(items);
 
-        // Handle collaborators
         List<CollaboratorEntity> collaborators = shoppingListDTO.getCollaborators().stream().map(collabDTO -> {
             UsersEntity user = usersRepository.findById(collabDTO.getUserId())
                     .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + collabDTO.getUserId()));
@@ -83,7 +81,6 @@ public class ShoppingListService {
             collaborator.setUser(user);
             collaborator.setPermission(PermissionEnum.valueOf(collabDTO.getPermission()));
             
-            // Create notification for the collaborator (but not for the owner)
             if (!user.getUserId().equals(owner.getUserId())) {
                 notificationService.createCollaboratorAddedNotification(owner, user, shoppingListDTO.getName());
             }
@@ -124,7 +121,6 @@ public class ShoppingListService {
                 .orElseThrow(() -> new ResourceNotFoundException("Store not found with id: " + shoppingListDTO.getStoreId()));
         shoppingList.setStore(store);
 
-        // Update items
         shoppingList.getItems().clear();
         List<ShoppingListItemEntity> items = shoppingListDTO.getItems().stream().map(itemDTO -> {
             ProductEntity product = productRepository.findById(itemDTO.getProductId())
@@ -139,7 +135,6 @@ public class ShoppingListService {
         }).toList();
         shoppingList.getItems().addAll(items);
 
-        // Update collaborators
         updateCollaborators(shoppingList, shoppingListDTO.getCollaborators());
 
         ShoppingListEntity saved = shoppingListRepository.save(shoppingList);
@@ -147,15 +142,12 @@ public class ShoppingListService {
     }
 
     private void updateCollaborators(ShoppingListEntity shoppingList, List<CollaboratorDTO> newCollaborators) {
-        // Get current collaborators
         List<CollaboratorEntity> existingCollaborators = new ArrayList<>(shoppingList.getCollaborators());
 
-        // Create sets for easy comparison
         Set<UUID> newCollaboratorUserIds = newCollaborators.stream()
                 .map(CollaboratorDTO::getUserId)
                 .collect(Collectors.toSet());
 
-        // Remove collaborators that are no longer needed
         existingCollaborators.removeIf(collaborator -> {
             UUID userId = collaborator.getUser().getUserId();
             if (!newCollaboratorUserIds.contains(userId)) {
@@ -165,20 +157,16 @@ public class ShoppingListService {
             return false;
         });
 
-        // Update existing collaborators and add new ones
         for (CollaboratorDTO collabDTO : newCollaborators) {
             UUID userId = collabDTO.getUserId();
 
-            // Check if this collaborator already exists
             Optional<CollaboratorEntity> existingCollaborator = shoppingList.getCollaborators().stream()
                     .filter(c -> c.getUser().getUserId().equals(userId))
                     .findFirst();
 
             if (existingCollaborator.isPresent()) {
-                // Update existing collaborator's permission
                 existingCollaborator.get().setPermission(PermissionEnum.valueOf(collabDTO.getPermission()));
             } else {
-                // Add new collaborator
                 UsersEntity user = usersRepository.findById(userId)
                         .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
@@ -189,7 +177,6 @@ public class ShoppingListService {
 
                 shoppingList.getCollaborators().add(newCollaborator);
                 
-                // Create notification for the new collaborator (but not for the owner)
                 if (!user.getUserId().equals(shoppingList.getOwner().getUserId())) {
                     notificationService.createCollaboratorAddedNotification(shoppingList.getOwner(), user, shoppingList.getName());
                 }

@@ -1,5 +1,6 @@
 package com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.controllers.admin;
 
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.admin.AvailableProductDTO;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.admin.PopularShopDTO;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.admin.StoreCreateUpdateDTO;  // ← import your DTO
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.dto.StoreDTO;
@@ -8,6 +9,7 @@ import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.repositories.StoreRepository;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.repositories.StorePriceRepository;
 import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.services.admin.AnalyticsService;
+import com.smart_shopping_list_expense_manager.java.smart_shopping_list_expense_manager.services.admin.ProductService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,14 +25,17 @@ public class StoreController {
     private final StoreRepository storeRepository;
     private final StorePriceRepository storePriceRepository;
     private final AnalyticsService analyticsService;
+    private final ProductService productService;
     public StoreController(
             StoreRepository storeRepository,
             StorePriceRepository storePriceRepository,
-            AnalyticsService analyticsService
+            AnalyticsService analyticsService,
+            ProductService      productService
     ) {
         this.storeRepository      = storeRepository;
         this.storePriceRepository = storePriceRepository;
         this.analyticsService     = analyticsService;
+        this.productService       = productService;
     }
 
     @GetMapping
@@ -54,7 +59,7 @@ public class StoreController {
     ) {
         StoreEntity entity = new StoreEntity();
         entity.setName(body.getName());
-        entity.setIcon(body.getIcon());         // ← use getIcon()
+        entity.setIcon(body.getIcon());
         entity.setLocation(body.getLocation());
         entity.setContact(body.getContact());
 
@@ -75,7 +80,7 @@ public class StoreController {
         return storeRepository.findById(storeId)
                 .map(existing -> {
                     existing.setName(body.getName());
-                    existing.setIcon(body.getIcon());     // ← use getIcon()
+                    existing.setIcon(body.getIcon());
                     existing.setLocation(body.getLocation());
                     existing.setContact(body.getContact());
 
@@ -128,6 +133,14 @@ public class StoreController {
     @GetMapping("/popular")
     public ResponseEntity<List<PopularShopDTO>> getPopularShops() {
         List<PopularShopDTO> list = analyticsService.getPopularStores();
+        return ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/{storeId}/available-products")
+    public ResponseEntity<List<AvailableProductDTO>> getAvailableProducts(
+            @PathVariable String storeId
+    ) {
+        var list = productService.getAvailableProducts(storeId);
         return ResponseEntity.ok(list);
     }
 }
